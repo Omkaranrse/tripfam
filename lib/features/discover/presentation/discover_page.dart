@@ -90,6 +90,7 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
 
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'discover_host_trip_fab',
         onPressed: () => context.push('/trip/new'),
         icon: const Icon(Icons.add_location_alt_rounded),
         label: const Text('Host Trip'),

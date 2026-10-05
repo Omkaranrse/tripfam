@@ -48,6 +48,7 @@ class _MyTripsPageState extends ConsumerState<MyTripsPage>
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(bottom: 76),
         child: FloatingActionButton.extended(
+          heroTag: 'my_trips_new_trip_fab',
           onPressed: () {
             HapticFeedback.selectionClick();
             context.push('/trip/new');
