@@ -30,7 +30,6 @@ class AppNavigationShell extends StatelessWidget {
           (d) => NavigationDestination(
             icon: Icon(d.icon),
             selectedIcon: Icon(d.selectedIcon),
-            label: d.label,
           ),
         )
         .toList();
@@ -200,7 +199,8 @@ class AppNavigationShell extends StatelessWidget {
                     child: NavigationBar(
                       selectedIndex: navigationShell.currentIndex,
                       onDestinationSelected: navigationShell.goBranch,
-                      labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
+                      labelBehavior:
+                          NavigationDestinationLabelBehavior.alwaysHide,
                       height: 60,
                       destinations: bottomDestinations,
                     ),
