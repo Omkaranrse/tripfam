@@ -200,6 +200,8 @@ class AppNavigationShell extends StatelessWidget {
                     child: NavigationBar(
                       selectedIndex: navigationShell.currentIndex,
                       onDestinationSelected: navigationShell.goBranch,
+                      labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
+                      height: 60,
                       destinations: bottomDestinations,
                     ),
                   ),

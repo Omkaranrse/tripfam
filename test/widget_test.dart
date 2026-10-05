@@ -57,7 +57,7 @@ void main() {
       expect(find.byType(NavigationBar), findsOneWidget);
       expect(tester.takeException(), isNull);
 
-      await tester.tap(find.text('My trips'));
+      await tester.tap(find.byIcon(Icons.luggage_outlined));
       await tester.pumpAndSettle();
 
       expect(find.text('My Trips'), findsOneWidget);

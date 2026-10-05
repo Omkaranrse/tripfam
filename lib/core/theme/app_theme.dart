@@ -144,7 +144,8 @@ abstract final class AppTheme {
         backgroundColor: Colors.transparent,
         indicatorColor: const Color(0xFFC6E062).withAlpha(45),
         elevation: 0,
-        height: 64,
+        height: 60,
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
             return textTheme.labelSmall?.copyWith(
