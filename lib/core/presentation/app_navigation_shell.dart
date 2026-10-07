@@ -25,17 +25,18 @@ class AppNavigationShell extends StatelessWidget {
     final isShort = context.isShort;
     final isDark = theme.brightness == Brightness.dark;
 
-    final bottomDestinations = _destinations
-        .map(
+    final List<Widget> bottomDestinations = _destinations
+        .map<Widget>(
           (d) => NavigationDestination(
             icon: Icon(d.icon),
             selectedIcon: Icon(d.selectedIcon),
+            label: d.label,
           ),
         )
         .toList();
 
-    final railDestinations = _destinations
-        .map(
+    final List<NavigationRailDestination> railDestinations = _destinations
+        .map<NavigationRailDestination>(
           (d) => NavigationRailDestination(
             icon: Icon(d.icon),
             selectedIcon: Icon(d.selectedIcon),
