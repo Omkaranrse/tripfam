@@ -107,43 +107,48 @@ class _IntroCallCardState extends ConsumerState<IntroCallCard> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: call.isBothConfirmed
-                          ? Colors.green.withAlpha(30)
-                          : theme.colorScheme.primary.withAlpha(25),
-                      shape: BoxShape.circle,
+              Expanded(
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: call.isBothConfirmed
+                            ? Colors.green.withAlpha(30)
+                            : theme.colorScheme.primary.withAlpha(25),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        call.isBothConfirmed
+                            ? Icons.lock_open_rounded
+                            : Icons.video_camera_front_rounded,
+                        size: 20,
+                        color: call.isBothConfirmed
+                            ? Colors.green
+                            : theme.colorScheme.primary,
+                      ),
                     ),
-                    child: Icon(
-                      call.isBothConfirmed
-                          ? Icons.lock_open_rounded
-                          : Icons.video_camera_front_rounded,
-                      size: 20,
-                      color: call.isBothConfirmed
-                          ? Colors.green
-                          : theme.colorScheme.primary,
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        call.isBothConfirmed
+                            ? 'Chat Unlocked'
+                            : (call.isScheduled
+                                  ? 'Intro Call Scheduled'
+                                  : 'Intro Call Needed'),
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: call.isBothConfirmed
+                              ? Colors.green.shade800
+                              : theme.colorScheme.onSurface,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    call.isBothConfirmed
-                        ? 'Chat Unlocked'
-                        : (call.isScheduled
-                              ? 'Intro Call Scheduled'
-                              : 'Intro Call Needed'),
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: call.isBothConfirmed
-                          ? Colors.green.shade800
-                          : theme.colorScheme.onSurface,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
               if (call.isScheduled && !call.isBothConfirmed)
                 TextButton.icon(
@@ -172,10 +177,13 @@ class _IntroCallCardState extends ConsumerState<IntroCallCard> {
                   color: theme.colorScheme.onSurface.withAlpha(160),
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  '${call.scheduledAt!.day}/${call.scheduledAt!.month}/${call.scheduledAt!.year} at ${_formatTime(call.scheduledAt!)}',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
+                Expanded(
+                  child: Text(
+                    '${call.scheduledAt!.day}/${call.scheduledAt!.month}/${call.scheduledAt!.year} at ${_formatTime(call.scheduledAt!)}',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
@@ -238,14 +246,15 @@ class _IntroCallCardState extends ConsumerState<IntroCallCard> {
             const SizedBox(height: 14),
 
             // Dual confirmation trackers
-            Row(
+            Wrap(
+              spacing: 8,
+              runSpacing: 6,
               children: [
                 _buildConfirmationBadge(
                   context,
                   label: 'You',
                   isConfirmed: hasUserConfirmed,
                 ),
-                const SizedBox(width: 12),
                 _buildConfirmationBadge(
                   context,
                   label: otherRoleLabel,

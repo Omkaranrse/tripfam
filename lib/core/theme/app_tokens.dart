@@ -48,7 +48,9 @@ abstract final class AppRadius {
   static const BorderRadius border24 = BorderRadius.all(Radius.circular(r24));
   static const BorderRadius border28 = BorderRadius.all(Radius.circular(r28));
   static const BorderRadius border32 = BorderRadius.all(Radius.circular(r32));
-  static const BorderRadius borderPill = BorderRadius.all(Radius.circular(pill));
+  static const BorderRadius borderPill = BorderRadius.all(
+    Radius.circular(pill),
+  );
 }
 
 abstract final class AppMotion {
