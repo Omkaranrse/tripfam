@@ -243,27 +243,73 @@ class SwipeableDeckState extends State<SwipeableDeck>
     required int stackIndex,
     required bool disableAnimations,
   }) {
-    // stackIndex 1: scale 0.95, offset 12px
-    // stackIndex 2: scale 0.90, offset 24px
-    final baseScale = stackIndex == 1 ? 0.95 : 0.90;
-    final baseOffset = stackIndex == 1 ? 12.0 : 24.0;
+    // Physical Cascading Peek:
+    // stackIndex 1: scale 0.94, offset 13px downward peek
+    // stackIndex 2: scale 0.88, offset 25px downward peek
+    final baseScale = stackIndex == 1 ? 0.94 : 0.88;
+    final baseOffset = stackIndex == 1 ? 13.0 : 25.0;
 
-    // Spring interpolation during top card dismiss
-    final dynamicScale = _isAnimatingCommit && !disableAnimations
-        ? baseScale + (0.05 * _animController.value)
-        : baseScale;
-    final dynamicOffset = _isAnimatingCommit && !disableAnimations
-        ? baseOffset - (12.0 * _animController.value)
-        : baseOffset;
+    // Interactive drag progress (when user drags the top card)
+    final dragProgress = disableAnimations
+        ? 0.0
+        : (_dragOffset.dx.abs() / (widget.deckWidth * 0.45)).clamp(0.0, 1.0);
+
+    // Dynamic animation during drag or commit dismiss
+    final animProgress = _isAnimatingCommit && !disableAnimations
+        ? _animController.value
+        : dragProgress;
+
+    // Target positions when front card is dismissed:
+    // card 1 ascends to front (scale 1.0, offset 0.0)
+    // card 2 ascends to card 1 (scale 0.94, offset 13.0)
+    final targetScale = stackIndex == 1 ? 1.0 : 0.94;
+    final targetOffset = stackIndex == 1 ? 0.0 : 13.0;
+
+    final dynamicScale =
+        baseScale + ((targetScale - baseScale) * animProgress);
+    final dynamicOffset =
+        baseOffset + ((targetOffset - baseOffset) * animProgress);
+
+    // Layered shadow opacity: card behind is subtly shaded by card in front
+    final baseShade = stackIndex == 1 ? 40 : 75;
+    final targetShade = stackIndex == 1 ? 0 : 40;
+    final dynamicShade =
+        (baseShade + ((targetShade - baseShade) * animProgress)).round();
 
     return Positioned(
       top: dynamicOffset,
       child: Transform.scale(
         scale: dynamicScale,
-        alignment: Alignment.topCenter,
-        child: Opacity(
-          opacity: stackIndex == 1 ? 0.92 : 0.75,
-          child: _buildCardContent(trip: trip, isInteractive: false),
+        alignment: Alignment.bottomCenter,
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppRadius.r28),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(stackIndex == 1 ? 55 : 40),
+                blurRadius: 18,
+                spreadRadius: -2,
+                offset: Offset(0, stackIndex == 1 ? 8 : 12),
+              ),
+            ],
+          ),
+          child: Stack(
+            children: [
+              Opacity(
+                opacity: stackIndex == 1 ? 0.96 : 0.86,
+                child: _buildCardContent(trip: trip, isInteractive: false),
+              ),
+              if (dynamicShade > 0)
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(AppRadius.r28),
+                      color: Colors.black.withAlpha(dynamicShade),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );

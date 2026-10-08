@@ -49,7 +49,7 @@ class SupabaseJoinRequestRepository implements JoinRequestRepository {
     final sanitizedMessage = TextSanitizer.sanitize(message);
 
     if (_client == null || DemoData.enabled) {
-      return JoinRequest(
+      final req = JoinRequest(
         id: 'req-demo-${DateTime.now().millisecondsSinceEpoch}',
         tripId: tripId,
         userId: DemoData.currentUserId,
@@ -64,6 +64,8 @@ class SupabaseJoinRequestRepository implements JoinRequestRepository {
           travelStyle: DemoUsers.currentUser.travelStyle,
         ),
       );
+      DemoRequests.recordDemoRequest(req);
+      return req;
     }
 
     final user = _client.auth.currentUser;

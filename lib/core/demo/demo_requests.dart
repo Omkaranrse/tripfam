@@ -5,9 +5,17 @@ import 'demo_users.dart';
 abstract final class DemoRequests {
   static final DateTime _now = DateTime.now();
 
+  static final List<JoinRequest> _dynamicRequests = [];
+
+  static void recordDemoRequest(JoinRequest request) {
+    _dynamicRequests.removeWhere((r) => r.tripId == request.tripId);
+    _dynamicRequests.insert(0, request);
+  }
+
   /// Join requests submitted by the current demo user (Omkar) to other trips.
   static List<JoinRequest> get myOutgoingRequests {
     return [
+      ..._dynamicRequests,
       // 1. Alibaug: Both Confirmed -> Chat Unlocked!
       JoinRequest(
         id: 'req-omkar-alibaug',

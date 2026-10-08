@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/layout/breakpoints.dart';
-import '../../../core/theme/app_tokens.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_widgets.dart';
 import '../domain/chat_message.dart';
 import 'controllers/chat_list_controller.dart';
@@ -131,53 +131,85 @@ class _ChatsPageState extends ConsumerState<ChatsPage> {
           // Header & Search Bar
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     'Trip Chats',
-                    style: theme.textTheme.headlineSmall?.copyWith(
+                    style: theme.textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
-                      letterSpacing: -0.5,
+                      letterSpacing: -0.4,
+                      fontSize: 21,
                     ),
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 10),
 
                   // Search Bar with local title & destination filtering
-                  TextField(
-                    controller: _searchController,
-                    onChanged: (val) => ref
-                        .read(chatListControllerProvider.notifier)
-                        .setSearchQuery(val),
-                    decoration: InputDecoration(
-                      hintText: 'Search chats or destinations...',
-                      hintStyle: TextStyle(
-                        fontSize: 14,
-                        color: theme.colorScheme.onSurface.withAlpha(130),
+                  SizedBox(
+                    height: 40,
+                    child: TextField(
+                      controller: _searchController,
+                      onChanged: (val) => ref
+                          .read(chatListControllerProvider.notifier)
+                          .setSearchQuery(val),
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontSize: 13.5,
                       ),
-                      prefixIcon: const Icon(Icons.search_rounded, size: 20),
-                      suffixIcon: state.searchQuery.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(Icons.clear_rounded, size: 18),
-                              onPressed: () {
-                                _searchController.clear();
-                                ref
-                                    .read(chatListControllerProvider.notifier)
-                                    .setSearchQuery('');
-                              },
-                            )
-                          : null,
-                      filled: true,
-                      fillColor: theme.colorScheme.surfaceContainerHighest
-                          .withAlpha(80),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 10,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(AppRadius.r16),
-                        borderSide: BorderSide.none,
+                      decoration: InputDecoration(
+                        isDense: true,
+                        hintText: 'Search chats or destinations...',
+                        hintStyle: TextStyle(
+                          fontSize: 13.5,
+                          color: theme.colorScheme.onSurface.withAlpha(130),
+                        ),
+                        prefixIcon: const Icon(Icons.search_rounded, size: 19),
+                        prefixIconConstraints: const BoxConstraints(
+                          minWidth: 38,
+                          minHeight: 38,
+                        ),
+                        suffixIcon: state.searchQuery.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.clear_rounded, size: 16),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(
+                                  minWidth: 34,
+                                  minHeight: 34,
+                                ),
+                                onPressed: () {
+                                  _searchController.clear();
+                                  ref
+                                      .read(chatListControllerProvider.notifier)
+                                      .setSearchQuery('');
+                                },
+                              )
+                            : null,
+                        filled: true,
+                        fillColor: theme.colorScheme.surfaceContainerHighest
+                            .withAlpha(75),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 9,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide(
+                            color: theme.colorScheme.outline.withAlpha(40),
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide(
+                            color: theme.colorScheme.outline.withAlpha(40),
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide(
+                            color: theme.colorScheme.primary,
+                            width: 1.5,
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -218,8 +250,8 @@ class _ChatsPageState extends ConsumerState<ChatsPage> {
     final past = state.pastChats;
 
     return SliverPadding(
-      // 80px bottom padding so the last row clears the nav bar!
-      padding: const EdgeInsets.only(bottom: 80),
+      // 104px bottom padding ensures the last row comfortably clears the floating dock!
+      padding: const EdgeInsets.only(bottom: 104),
       sliver: SliverList(
         delegate: SliverChildListDelegate([
           // 1. Upcoming Trips Section
@@ -237,13 +269,18 @@ class _ChatsPageState extends ConsumerState<ChatsPage> {
                 isMasterDetail: isMasterDetail,
               ),
               if (i < upcoming.length - 1)
-                const Divider(indent: 76, height: 1),
+                Divider(
+                  indent: 76,
+                  height: 1,
+                  thickness: 0.7,
+                  color: Theme.of(context).colorScheme.outlineVariant.withAlpha(45),
+                ),
             ],
           ],
 
           // 2. Past Trips Section (Read-only)
           if (past.isNotEmpty) ...[
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
             _buildSectionHeader(
               context,
               title: 'Past Trips',
@@ -258,7 +295,12 @@ class _ChatsPageState extends ConsumerState<ChatsPage> {
                 isMasterDetail: isMasterDetail,
               ),
               if (i < past.length - 1)
-                const Divider(indent: 76, height: 1),
+                Divider(
+                  indent: 76,
+                  height: 1,
+                  thickness: 0.7,
+                  color: Theme.of(context).colorScheme.outlineVariant.withAlpha(45),
+                ),
             ],
           ],
         ]),
@@ -275,28 +317,30 @@ class _ChatsPageState extends ConsumerState<ChatsPage> {
     final theme = Theme.of(context);
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 14, 20, 6),
+      padding: const EdgeInsets.fromLTRB(20, 10, 20, 4),
       child: Row(
         children: [
           Text(
             title,
             style: theme.textTheme.labelMedium?.copyWith(
               fontWeight: FontWeight.w700,
+              fontSize: 12,
               color: theme.colorScheme.primary,
-              letterSpacing: 0.5,
+              letterSpacing: 0.3,
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
             decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withAlpha(25),
-              borderRadius: BorderRadius.circular(10),
+              color: theme.colorScheme.primary.withAlpha(20),
+              borderRadius: BorderRadius.circular(AppRadius.pill),
             ),
             child: Text(
               '$count',
               style: TextStyle(
-                fontSize: 11,
+                fontFamily: 'Poppins',
+                fontSize: 10.5,
                 fontWeight: FontWeight.w700,
                 color: theme.colorScheme.primary,
               ),
@@ -315,6 +359,7 @@ class _ChatsPageState extends ConsumerState<ChatsPage> {
               style: theme.textTheme.labelSmall?.copyWith(
                 color: theme.colorScheme.onSurface.withAlpha(120),
                 fontStyle: FontStyle.italic,
+                fontSize: 10.5,
               ),
             ),
           ],
@@ -330,6 +375,7 @@ class _ChatsPageState extends ConsumerState<ChatsPage> {
     required bool isMasterDetail,
   }) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final hasUnread = chat.unreadCount > 0;
     final isSelected = isMasterDetail && _selectedChat?.tripId == chat.tripId;
     final timeStr = _formatSmartTimestamp(chat.lastMessageAt);
@@ -368,35 +414,36 @@ class _ChatsPageState extends ConsumerState<ChatsPage> {
           }
         },
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // 56px circular trip cover photo (with initials fallback)
-              ClipOval(
+              // 48px circular trip cover photo
+              ClipRRect(
+                borderRadius: BorderRadius.circular(AppRadius.pill),
                 child: SizedBox(
-                  width: 56,
-                  height: 56,
+                  width: 48,
+                  height: 48,
                   child: DestinationImage(
-                    tripId: chat.tripId,
+                    tripId: 'chat-${chat.tripId}',
                     destination: chat.destination.isNotEmpty
                         ? chat.destination
                         : chat.tripTitle,
-                    width: 56,
-                    height: 56,
+                    width: 48,
+                    height: 48,
                     borderRadius: BorderRadius.zero,
                   ),
                 ),
               ),
 
-              const SizedBox(width: 14),
+              const SizedBox(width: 12),
 
               // Title and preview columns
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Line 1: Title (16/600, ellipsis) + Smart timestamp
+                    // Line 1: Title (14.5sp, w600) + Smart timestamp
                     Row(
                       children: [
                         Expanded(
@@ -404,14 +451,14 @@ class _ChatsPageState extends ConsumerState<ChatsPage> {
                             text: chat.tripTitle,
                             query: searchQuery,
                             baseStyle: TextStyle(
-                              fontSize: 16,
+                              fontSize: 14.5,
                               fontWeight:
                                   hasUnread ? FontWeight.w700 : FontWeight.w600,
                               color: theme.colorScheme.onSurface,
                               letterSpacing: -0.2,
                             ),
                             highlightStyle: TextStyle(
-                              fontSize: 16,
+                              fontSize: 14.5,
                               fontWeight: FontWeight.w700,
                               color: theme.colorScheme.primary,
                               backgroundColor:
@@ -423,32 +470,35 @@ class _ChatsPageState extends ConsumerState<ChatsPage> {
                         Text(
                           timeStr,
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 11.5,
                             fontWeight:
                                 hasUnread ? FontWeight.w600 : FontWeight.w400,
                             color: hasUnread
-                                ? theme.colorScheme.primary
+                                ? (isDark
+                                    ? AppTheme.lime
+                                    : theme.colorScheme.primary)
                                 : theme.colorScheme.onSurface.withAlpha(140),
                           ),
                         ),
                       ],
                     ),
 
-                    const SizedBox(height: 5),
+                    const SizedBox(height: 3.5),
 
-                    // Line 2: "FirstName: message preview" (14/400 muted) + Unread Pill
+                    // Line 2: "FirstName: message preview" (12.5sp) + Unread Pill
                     Row(
                       children: [
                         Expanded(
                           child: Text(
                             previewText,
                             style: TextStyle(
-                              fontSize: 14,
+                              fontSize: 12.5,
                               fontWeight:
-                                  hasUnread ? FontWeight.w600 : FontWeight.w400,
+                                  hasUnread ? FontWeight.w500 : FontWeight.w400,
                               color: hasUnread
-                                  ? theme.colorScheme.onSurface
-                                  : theme.colorScheme.onSurface.withAlpha(150),
+                                  ? theme.colorScheme.onSurface.withAlpha(220)
+                                  : theme.colorScheme.onSurface.withAlpha(140),
+                              height: 1.25,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -457,20 +507,27 @@ class _ChatsPageState extends ConsumerState<ChatsPage> {
                         if (hasUnread) ...[
                           const SizedBox(width: 8),
                           Container(
+                            constraints: const BoxConstraints(
+                              minWidth: 18,
+                              minHeight: 18,
+                            ),
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 7,
-                              vertical: 2,
+                              horizontal: 5.5,
+                              vertical: 1.5,
                             ),
                             decoration: BoxDecoration(
                               color: theme.colorScheme.primary,
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(AppRadius.pill),
                             ),
-                            child: Text(
-                              '${chat.unreadCount}',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                color: theme.colorScheme.onPrimary,
+                            child: Center(
+                              child: Text(
+                                '${chat.unreadCount}',
+                                style: TextStyle(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.bold,
+                                  color: theme.colorScheme.onPrimary,
+                                  height: 1.1,
+                                ),
                               ),
                             ),
                           ),

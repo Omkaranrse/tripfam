@@ -69,12 +69,12 @@ class JoinRequestProgressStepper extends StatelessWidget {
             ],
           ],
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
             color: stage == JoinRequestStage.bothConfirmed
-                ? Colors.green.withAlpha(25)
+                ? Colors.green.withAlpha(20)
                 : theme.colorScheme.primary.withAlpha(15),
             borderRadius: BorderRadius.circular(8),
           ),
@@ -84,19 +84,22 @@ class JoinRequestProgressStepper extends StatelessWidget {
                 stage == JoinRequestStage.bothConfirmed
                     ? Icons.lock_open_rounded
                     : Icons.info_outline_rounded,
-                size: 16,
+                size: 14,
                 color: stage == JoinRequestStage.bothConfirmed
                     ? Colors.green
                     : theme.colorScheme.primary,
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               Expanded(
                 child: Text(
                   _getStageDescription(stage),
                   style: theme.textTheme.bodySmall?.copyWith(
                     fontWeight: FontWeight.w600,
+                    fontSize: 10.5,
                     color: stage == JoinRequestStage.bothConfirmed
-                        ? Colors.green.shade800
+                        ? (theme.brightness == Brightness.dark
+                            ? Colors.green.shade300
+                            : Colors.green.shade800)
                         : theme.colorScheme.primary,
                   ),
                 ),
@@ -130,23 +133,23 @@ class JoinRequestProgressStepper extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 32,
-          height: 32,
+          width: 26,
+          height: 26,
           decoration: BoxDecoration(
             color: bg,
             shape: BoxShape.circle,
             border: isCurrent
-                ? Border.all(color: theme.colorScheme.primary, width: 2)
+                ? Border.all(color: theme.colorScheme.primary, width: 1.5)
                 : null,
           ),
-          child: Icon(isDone ? Icons.check : step.icon, size: 16, color: fg),
+          child: Icon(isDone ? Icons.check : step.icon, size: 13, color: fg),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 3),
         Text(
           step.label,
           style: theme.textTheme.labelSmall?.copyWith(
-            fontSize: 10,
-            fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
+            fontSize: 9.5,
+            fontWeight: isCurrent ? FontWeight.w600 : FontWeight.normal,
             color: isCurrent
                 ? theme.colorScheme.primary
                 : theme.colorScheme.onSurface.withAlpha(150),

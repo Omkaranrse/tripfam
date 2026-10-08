@@ -28,6 +28,7 @@ class _SafetyPageState extends ConsumerState<SafetyPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final myTripsAsync = ref.watch(myTripsProvider);
     final contactsAsync = ref.watch(trustedContactsProvider);
     final blockedAsync = ref.watch(blockedUsersListProvider);
@@ -36,84 +37,116 @@ class _SafetyPageState extends ConsumerState<SafetyPage> {
       body: SafeArea(
         top: false,
         bottom: false,
-        child: ListView(
-          padding: AppSpacing.pagePaddingInsets(context, vertical: AppSpacing.s12),
-          children: [
-            // Header Section
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Safety Center',
-                        style: theme.textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: -0.5,
+        child: RefreshIndicator(
+          onRefresh: () async {
+            await HapticFeedback.lightImpact();
+            ref.invalidate(trustedContactsProvider);
+            ref.invalidate(myTripsProvider);
+            ref.invalidate(blockedUsersListProvider);
+          },
+          child: ListView(
+            padding: AppSpacing.pagePaddingInsets(context, vertical: AppSpacing.s12),
+            children: [
+              // Header Section
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Safety Center',
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: -0.4,
+                            fontSize: 21,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Emergency contacts, check-ins, and safety tools.',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurface.withAlpha(160),
+                        const SizedBox(height: 3),
+                        Text(
+                          'Emergency contacts, check-ins, and safety tools.',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurface.withAlpha(150),
+                            fontSize: 12.5,
+                            height: 1.3,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(width: AppSpacing.s12),
-                IconButton.filledTonal(
-                  icon: const Icon(Icons.refresh_rounded, size: 20),
-                  tooltip: 'Refresh safety data',
-                  onPressed: () {
-                    HapticFeedback.lightImpact();
-                    ref.invalidate(trustedContactsProvider);
-                    ref.invalidate(myTripsProvider);
-                    ref.invalidate(blockedUsersListProvider);
-                  },
-                ),
-              ],
-            ).animateEntrance(context: context, index: 0),
-            const SizedBox(height: AppSpacing.s20),
+                  const SizedBox(width: AppSpacing.s12),
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? Colors.white.withAlpha(16)
+                          : theme.colorScheme.surfaceContainerHighest.withAlpha(120),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isDark
+                            ? Colors.white.withAlpha(25)
+                            : theme.colorScheme.outlineVariant.withAlpha(80),
+                      ),
+                    ),
+                    child: IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      icon: Icon(
+                        Icons.refresh_rounded,
+                        size: 18,
+                        color: theme.colorScheme.onSurface.withAlpha(200),
+                      ),
+                      tooltip: 'Refresh safety data',
+                      onPressed: () {
+                        HapticFeedback.lightImpact();
+                        ref.invalidate(trustedContactsProvider);
+                        ref.invalidate(myTripsProvider);
+                        ref.invalidate(blockedUsersListProvider);
+                      },
+                    ),
+                  ),
+                ],
+              ).animateEntrance(context: context, index: 0),
+              const SizedBox(height: AppSpacing.s16),
 
-            // 1. ACTIVE TRIP CHECK-IN CARD
-            _buildCheckinCard(theme, myTripsAsync)
-                .animateEntrance(context: context, index: 1),
+              // 1. ACTIVE TRIP CHECK-IN CARD
+              _buildCheckinCard(theme, myTripsAsync)
+                  .animateEntrance(context: context, index: 1),
 
-            const SizedBox(height: AppSpacing.s16),
+              const SizedBox(height: AppSpacing.s12),
 
-            // 2. TRUSTED CONTACTS CARD (Max 3, Stored Privately)
-            _buildTrustedContactsCard(theme, contactsAsync)
-                .animateEntrance(context: context, index: 2),
+              // 2. TRUSTED CONTACTS CARD (Max 3, Stored Privately)
+              _buildTrustedContactsCard(theme, contactsAsync)
+                  .animateEntrance(context: context, index: 2),
 
-            const SizedBox(height: AppSpacing.s16),
+              const SizedBox(height: AppSpacing.s12),
 
-            // 3. LIVE LOCATION SHARING CARD
-            _buildLiveLocationCard(theme)
-                .animateEntrance(context: context, index: 3),
+              // 3. LIVE LOCATION SHARING CARD
+              _buildLiveLocationCard(theme)
+                  .animateEntrance(context: context, index: 3),
 
-            const SizedBox(height: AppSpacing.s16),
+              const SizedBox(height: AppSpacing.s12),
 
-            // 4. REPORT & BLOCK LIST TOOLS
-            _buildSafetyToolsCard(theme, blockedAsync)
-                .animateEntrance(context: context, index: 4),
+              // 4. REPORT & BLOCK LIST TOOLS
+              _buildSafetyToolsCard(theme, blockedAsync)
+                  .animateEntrance(context: context, index: 4),
 
-            const SizedBox(height: AppSpacing.s16),
+              const SizedBox(height: AppSpacing.s12),
 
-            // 5. EMERGENCY HOTLINES / RESOURCES
-            _buildHotlinesCard(theme)
-                .animateEntrance(context: context, index: 5),
+              // 5. EMERGENCY HOTLINES / RESOURCES
+              _buildHotlinesCard(theme)
+                  .animateEntrance(context: context, index: 5),
 
-            // Extra clearance for floating bottom pill bar
-            const SizedBox(height: AppSpacing.s80),
-          ],
+              // Extra clearance for floating bottom navigation dock
+              const SizedBox(height: 108),
+            ],
+          ),
         ),
       ),
     );
@@ -131,7 +164,7 @@ class _SafetyPageState extends ConsumerState<SafetyPage> {
         color: isDark
             ? AppTheme.darkForestSurfaceDark
             : theme.colorScheme.surface,
-        borderRadius: AppRadius.border20,
+        borderRadius: AppRadius.border16,
         border: Border.all(
           color: isDark
               ? Colors.white.withAlpha(20)
@@ -140,7 +173,7 @@ class _SafetyPageState extends ConsumerState<SafetyPage> {
         ),
         boxShadow: AppShadows.subtle(context),
       ),
-      padding: const EdgeInsets.all(AppSpacing.s20),
+      padding: const EdgeInsets.all(AppSpacing.s16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -148,24 +181,27 @@ class _SafetyPageState extends ConsumerState<SafetyPage> {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                width: 36,
+                height: 36,
+                alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: semantic.success.withAlpha(30),
+                  color: semantic.success.withAlpha(25),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.check_circle_outline_rounded,
                   color: semantic.success,
-                  size: 22,
+                  size: 20,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   'Safety Check-In',
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
-                    letterSpacing: -0.3,
+                    letterSpacing: -0.2,
+                    fontSize: 16,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -192,8 +228,8 @@ class _SafetyPageState extends ConsumerState<SafetyPage> {
                 borderRadius: AppRadius.borderPill,
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 5,
+                    horizontal: 9,
+                    vertical: 4,
                   ),
                   decoration: BoxDecoration(
                     color: isDark
@@ -213,10 +249,11 @@ class _SafetyPageState extends ConsumerState<SafetyPage> {
                         'Every ${_currentIntervalHours}h',
                         style: theme.textTheme.labelSmall?.copyWith(
                           fontWeight: FontWeight.w600,
+                          fontSize: 11,
                           color: isDark ? AppTheme.lime : theme.colorScheme.primary,
                         ),
                       ),
-                      const SizedBox(width: 3),
+                      const SizedBox(width: 4),
                       Icon(
                         Icons.edit_outlined,
                         size: 11,
@@ -228,7 +265,7 @@ class _SafetyPageState extends ConsumerState<SafetyPage> {
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.s16),
+          const SizedBox(height: 12),
 
           // Active Trip selector if user has trips
           myTripsAsync.when(
@@ -249,15 +286,16 @@ class _SafetyPageState extends ConsumerState<SafetyPage> {
                     children: [
                       Icon(
                         Icons.info_outline_rounded,
-                        size: 18,
+                        size: 16,
                         color: theme.colorScheme.primary,
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           'No active trip departure. You can still test your check-in alert below.',
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurface.withAlpha(160),
+                            color: theme.colorScheme.onSurface.withAlpha(150),
+                            fontSize: 11.5,
                           ),
                         ),
                       ),
@@ -271,21 +309,21 @@ class _SafetyPageState extends ConsumerState<SafetyPage> {
 
               return Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.s12,
-                  vertical: 10.0,
+                  horizontal: 12,
+                  vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withAlpha(20),
+                  color: theme.colorScheme.primary.withAlpha(16),
                   borderRadius: AppRadius.border12,
                   border: Border.all(
-                    color: theme.colorScheme.primary.withAlpha(40),
+                    color: theme.colorScheme.primary.withAlpha(35),
                   ),
                 ),
                 child: Row(
                   children: [
                     Icon(
                       Icons.flight_takeoff_rounded,
-                      size: 18,
+                      size: 16,
                       color: theme.colorScheme.primary,
                     ),
                     const SizedBox(width: 8),
@@ -294,6 +332,7 @@ class _SafetyPageState extends ConsumerState<SafetyPage> {
                         'Active Trip: ${activeTrip.destination}',
                         style: theme.textTheme.bodyMedium?.copyWith(
                           fontWeight: FontWeight.w600,
+                          fontSize: 12.5,
                           color: theme.colorScheme.primary,
                         ),
                         maxLines: 1,
@@ -308,16 +347,21 @@ class _SafetyPageState extends ConsumerState<SafetyPage> {
             error: (_, _) => const SizedBox.shrink(),
           ),
 
-          const SizedBox(height: AppSpacing.s16),
+          const SizedBox(height: 12),
 
           // Status & Due time
           Container(
-            padding: const EdgeInsets.all(AppSpacing.s12),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
               color: isDark
                   ? Colors.white.withAlpha(8)
                   : theme.colorScheme.surfaceContainerHighest.withAlpha(60),
               borderRadius: AppRadius.border12,
+              border: Border.all(
+                color: isDark
+                    ? Colors.white.withAlpha(14)
+                    : theme.colorScheme.outlineVariant.withAlpha(50),
+              ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -329,17 +373,17 @@ class _SafetyPageState extends ConsumerState<SafetyPage> {
                       'STATUS',
                       style: theme.textTheme.labelSmall?.copyWith(
                         color: theme.colorScheme.onSurface.withAlpha(130),
-                        fontSize: 10,
+                        fontSize: 9.5,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 0.8,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 3),
                     Row(
                       children: [
                         Container(
-                          width: 8,
-                          height: 8,
+                          width: 7,
+                          height: 7,
                           decoration: BoxDecoration(
                             color: semantic.success,
                             shape: BoxShape.circle,
@@ -350,7 +394,7 @@ class _SafetyPageState extends ConsumerState<SafetyPage> {
                           _lastManualCheckin != null ? 'Safe (Recent)' : 'On Track',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            fontSize: 13,
+                            fontSize: 12.5,
                             color: semantic.success,
                           ),
                         ),
@@ -365,16 +409,17 @@ class _SafetyPageState extends ConsumerState<SafetyPage> {
                       'NEXT DUE',
                       style: theme.textTheme.labelSmall?.copyWith(
                         color: theme.colorScheme.onSurface.withAlpha(130),
-                        fontSize: 10,
+                        fontSize: 9.5,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 0.8,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 3),
                     Text(
                       'In $_currentIntervalHours hours',
                       style: theme.textTheme.bodyMedium?.copyWith(
                         fontWeight: FontWeight.w600,
+                        fontSize: 12.5,
                       ),
                     ),
                   ],
@@ -383,12 +428,12 @@ class _SafetyPageState extends ConsumerState<SafetyPage> {
             ),
           ),
 
-          const SizedBox(height: AppSpacing.s20),
+          const SizedBox(height: 14),
 
           // "I'M SAFE" CTA BUTTON
           SizedBox(
             width: double.infinity,
-            height: 48,
+            height: 44,
             child: ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
                 backgroundColor: semantic.success,
@@ -400,8 +445,8 @@ class _SafetyPageState extends ConsumerState<SafetyPage> {
               ),
               icon: _isCheckingIn
                   ? SizedBox(
-                      width: 18,
-                      height: 18,
+                      width: 16,
+                      height: 16,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
                         valueColor: AlwaysStoppedAnimation<Color>(
@@ -409,11 +454,11 @@ class _SafetyPageState extends ConsumerState<SafetyPage> {
                         ),
                       ),
                     )
-                  : const Icon(Icons.verified_rounded, size: 20),
+                  : const Icon(Icons.verified_rounded, size: 18),
               label: Text(
                 _isCheckingIn ? 'Recording Check-In...' : 'I\'m Safe',
                 style: const TextStyle(
-                  fontSize: 15,
+                  fontSize: 14,
                   fontWeight: FontWeight.bold,
                   letterSpacing: -0.2,
                 ),
@@ -422,14 +467,14 @@ class _SafetyPageState extends ConsumerState<SafetyPage> {
             ),
           ),
 
-          const SizedBox(height: 10.0),
+          const SizedBox(height: 8),
           Text(
             'If you miss a check-in before the deadline, an automated alert with trip details is dispatched to your trusted contacts.',
             textAlign: TextAlign.center,
             style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurface.withAlpha(140),
+              color: theme.colorScheme.onSurface.withAlpha(135),
               fontSize: 11,
-              height: 1.4,
+              height: 1.35,
             ),
           ),
         ],
@@ -486,22 +531,25 @@ class _SafetyPageState extends ConsumerState<SafetyPage> {
   ) {
     return AppCard(
       variant: AppCardVariant.elevated,
-      padding: const EdgeInsets.all(AppSpacing.s20),
+      borderRadius: AppRadius.r16,
+      padding: const EdgeInsets.all(AppSpacing.s16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                width: 36,
+                height: 36,
+                alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withAlpha(25),
+                  color: theme.colorScheme.primary.withAlpha(20),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.contact_phone_outlined,
                   color: theme.colorScheme.primary,
-                  size: 20,
+                  size: 18,
                 ),
               ),
               const SizedBox(width: 10),
@@ -511,6 +559,7 @@ class _SafetyPageState extends ConsumerState<SafetyPage> {
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                     letterSpacing: -0.2,
+                    fontSize: 16,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -520,20 +569,21 @@ class _SafetyPageState extends ConsumerState<SafetyPage> {
               contactsAsync.maybeWhen(
                 data: (list) => Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 3,
+                    horizontal: 8,
+                    vertical: 2.5,
                   ),
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withAlpha(20),
+                    color: theme.colorScheme.primary.withAlpha(18),
                     borderRadius: AppRadius.borderPill,
                     border: Border.all(
-                      color: theme.colorScheme.primary.withAlpha(50),
+                      color: theme.colorScheme.primary.withAlpha(45),
                     ),
                   ),
                   child: Text(
                     '${list.length}/3',
                     style: theme.textTheme.labelSmall?.copyWith(
                       fontWeight: FontWeight.bold,
+                      fontSize: 11,
                       color: theme.colorScheme.primary,
                     ),
                   ),
@@ -542,14 +592,16 @@ class _SafetyPageState extends ConsumerState<SafetyPage> {
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.s8),
+          const SizedBox(height: 6),
           Text(
             'Stored privately and encrypted. Never visible to other travellers or hosts.',
             style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurface.withAlpha(160),
+              color: theme.colorScheme.onSurface.withAlpha(140),
+              fontSize: 11.5,
+              height: 1.35,
             ),
           ),
-          const SizedBox(height: AppSpacing.s16),
+          const SizedBox(height: 12),
 
           contactsAsync.when(
             loading: () => const Center(
@@ -575,19 +627,20 @@ class _SafetyPageState extends ConsumerState<SafetyPage> {
                     children: [
                       Icon(
                         Icons.person_add_alt_1_outlined,
-                        size: 28,
+                        size: 26,
                         color: theme.colorScheme.onSurface.withAlpha(140),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 6),
                       const Text(
                         'No trusted contacts yet',
-                        style: TextStyle(fontWeight: FontWeight.w600),
+                        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 2),
                       Text(
                         'Add up to 3 emergency contacts to receive alerts.',
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.onSurface.withAlpha(140),
+                          fontSize: 11.5,
                         ),
                       ),
                     ],
@@ -597,11 +650,18 @@ class _SafetyPageState extends ConsumerState<SafetyPage> {
 
               return Column(
                 children: contacts.map((contact) {
+                  final hasParens = contact.name.contains('(');
+                  final showRelationTag = !hasParens &&
+                      contact.relationship.isNotEmpty &&
+                      contact.relationship != 'Emergency Contact';
+                  final contactDetail =
+                      contact.email ?? contact.phoneNumber ?? '';
+
                   return Container(
                     margin: const EdgeInsets.only(bottom: 8),
                     padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.s12,
-                      vertical: AppSpacing.s8,
+                      horizontal: 12,
+                      vertical: 8,
                     ),
                     decoration: BoxDecoration(
                       color: theme.colorScheme.surfaceContainerHighest.withAlpha(50),
@@ -613,7 +673,7 @@ class _SafetyPageState extends ConsumerState<SafetyPage> {
                     child: Row(
                       children: [
                         CircleAvatar(
-                          radius: 18,
+                          radius: 17,
                           backgroundColor: theme.colorScheme.primaryContainer,
                           child: Text(
                             contact.name.isNotEmpty
@@ -621,58 +681,93 @@ class _SafetyPageState extends ConsumerState<SafetyPage> {
                                 : '?',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
+                              fontSize: 13,
                               color: theme.colorScheme.onPrimaryContainer,
                             ),
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 10),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(
-                                contact.name,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
                               Row(
                                 children: [
-                                  Text(
-                                    contact.relationship,
-                                    style: theme.textTheme.labelSmall?.copyWith(
-                                      color: theme.colorScheme.primary,
-                                      fontWeight: FontWeight.w600,
+                                  Flexible(
+                                    child: Text(
+                                      contact.name,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 13.5,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
-                                  const SizedBox(width: 8),
-                                  if (contact.email != null)
-                                    Flexible(
-                                      child: Text(
-                                        contact.email!,
-                                        style: theme.textTheme.labelSmall?.copyWith(
-                                          color: theme.colorScheme.onSurface.withAlpha(140),
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
+                                  if (showRelationTag) ...[
+                                    const SizedBox(width: 6),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 6,
+                                        vertical: 1.5,
                                       ),
-                                    )
-                                  else if (contact.phoneNumber != null)
-                                    Flexible(
+                                      decoration: BoxDecoration(
+                                        color: theme.colorScheme.primary.withAlpha(20),
+                                        borderRadius: AppRadius.borderPill,
+                                      ),
                                       child: Text(
-                                        contact.phoneNumber!,
-                                        style: theme.textTheme.labelSmall?.copyWith(
-                                          color: theme.colorScheme.onSurface.withAlpha(140),
+                                        contact.relationship,
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w600,
+                                          color: theme.colorScheme.primary,
                                         ),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                              if (contactDetail.isNotEmpty) ...[
+                                const SizedBox(height: 2),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      contact.email != null
+                                          ? Icons.mail_outline_rounded
+                                          : Icons.phone_outlined,
+                                      size: 12,
+                                      color: theme.colorScheme.onSurface.withAlpha(140),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Expanded(
+                                      child: Text(
+                                        contactDetail,
+                                        style: theme.textTheme.labelSmall?.copyWith(
+                                          fontSize: 11.5,
+                                          color: theme.colorScheme.onSurface.withAlpha(150),
+                                        ),
+                                        maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
-                                ],
-                              ),
+                                  ],
+                                ),
+                              ],
                             ],
                           ),
                         ),
                         IconButton(
-                          icon: const Icon(Icons.delete_outline_rounded, size: 20),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(
+                            minWidth: 32,
+                            minHeight: 32,
+                          ),
+                          icon: Icon(
+                            Icons.delete_outline_rounded,
+                            size: 18,
+                            color: theme.colorScheme.onSurface.withAlpha(140),
+                          ),
                           tooltip: 'Remove contact',
                           onPressed: () async {
                             await ref
@@ -689,7 +784,7 @@ class _SafetyPageState extends ConsumerState<SafetyPage> {
             },
           ),
 
-          const SizedBox(height: AppSpacing.s12),
+          const SizedBox(height: 6),
 
           // Add contact button
           contactsAsync.maybeWhen(
@@ -700,6 +795,7 @@ class _SafetyPageState extends ConsumerState<SafetyPage> {
                     ? 'Add Trusted Contact'
                     : 'Limit Reached (3 / 3)',
                 icon: Icons.add_rounded,
+                size: AppButtonSize.small,
                 isPill: true,
                 variant: AppButtonVariant.outlined,
                 onPressed: contacts.length < 3
@@ -717,22 +813,25 @@ class _SafetyPageState extends ConsumerState<SafetyPage> {
   Widget _buildLiveLocationCard(ThemeData theme) {
     return AppCard(
       variant: AppCardVariant.elevated,
-      padding: const EdgeInsets.all(AppSpacing.s20),
+      borderRadius: AppRadius.r16,
+      padding: const EdgeInsets.all(AppSpacing.s16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                width: 36,
+                height: 36,
+                alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.secondary.withAlpha(25),
+                  color: theme.colorScheme.secondary.withAlpha(22),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.location_on_outlined,
                   color: theme.colorScheme.secondary,
-                  size: 20,
+                  size: 19,
                 ),
               ),
               const SizedBox(width: 10),
@@ -742,6 +841,7 @@ class _SafetyPageState extends ConsumerState<SafetyPage> {
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                     letterSpacing: -0.2,
+                    fontSize: 16,
                   ),
                 ),
               ),
@@ -773,12 +873,13 @@ class _SafetyPageState extends ConsumerState<SafetyPage> {
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.s8),
+          const SizedBox(height: 6),
           Text(
             'Opt-in only. Coordinates are shared with emergency contacts only if a scheduled check-in is missed. Automatically ceases when departure concludes.',
             style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurface.withAlpha(160),
-              height: 1.4,
+              color: theme.colorScheme.onSurface.withAlpha(140),
+              fontSize: 11.5,
+              height: 1.35,
             ),
           ),
         ],
@@ -794,6 +895,7 @@ class _SafetyPageState extends ConsumerState<SafetyPage> {
 
     return AppCard(
       variant: AppCardVariant.elevated,
+      borderRadius: AppRadius.r16,
       padding: const EdgeInsets.all(AppSpacing.s16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -803,48 +905,88 @@ class _SafetyPageState extends ConsumerState<SafetyPage> {
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
               letterSpacing: -0.2,
+              fontSize: 16,
             ),
           ),
-          const SizedBox(height: AppSpacing.s12),
+          const SizedBox(height: 8),
           ListTile(
             contentPadding: EdgeInsets.zero,
-            leading: CircleAvatar(
-              backgroundColor: theme.colorScheme.errorContainer,
+            visualDensity: VisualDensity.compact,
+            leading: Container(
+              width: 36,
+              height: 36,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.error.withAlpha(22),
+                shape: BoxShape.circle,
+              ),
               child: Icon(
-                Icons.report_gmailerrorred_rounded,
+                Icons.flag_rounded,
                 color: theme.colorScheme.error,
-                size: 20,
+                size: 19,
               ),
             ),
             title: const Text(
               'Submit Safety Report',
-              style: TextStyle(fontWeight: FontWeight.w600),
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 13.5,
+              ),
             ),
-            subtitle: const Text(
+            subtitle: Text(
               'Confidential report to our trust & safety team',
+              style: TextStyle(
+                fontSize: 11.5,
+                color: theme.colorScheme.onSurface.withAlpha(140),
+              ),
             ),
-            trailing: const Icon(Icons.chevron_right_rounded),
+            trailing: Icon(
+              Icons.chevron_right_rounded,
+              size: 20,
+              color: theme.colorScheme.onSurface.withAlpha(120),
+            ),
             onTap: () => GeneralReportDialog.show(context),
           ),
-          Divider(color: theme.colorScheme.outlineVariant.withAlpha(60), height: 1),
+          Divider(
+            color: theme.colorScheme.outlineVariant.withAlpha(40),
+            height: 1,
+          ),
           ListTile(
             contentPadding: EdgeInsets.zero,
-            leading: CircleAvatar(
-              backgroundColor: theme.colorScheme.surfaceContainerHighest,
+            visualDensity: VisualDensity.compact,
+            leading: Container(
+              width: 36,
+              height: 36,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.onSurface.withAlpha(14),
+                shape: BoxShape.circle,
+              ),
               child: Icon(
-                Icons.block_outlined,
-                color: theme.colorScheme.onSurfaceVariant,
-                size: 20,
+                Icons.block_rounded,
+                color: theme.colorScheme.onSurface.withAlpha(180),
+                size: 18,
               ),
             ),
             title: const Text(
               'Blocked Users',
-              style: TextStyle(fontWeight: FontWeight.w600),
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 13.5,
+              ),
             ),
             subtitle: Text(
               '$blockedCount blocked user${blockedCount == 1 ? '' : 's'}',
+              style: TextStyle(
+                fontSize: 11.5,
+                color: theme.colorScheme.onSurface.withAlpha(140),
+              ),
             ),
-            trailing: const Icon(Icons.chevron_right_rounded),
+            trailing: Icon(
+              Icons.chevron_right_rounded,
+              size: 20,
+              color: theme.colorScheme.onSurface.withAlpha(120),
+            ),
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute<void>(
@@ -861,32 +1003,129 @@ class _SafetyPageState extends ConsumerState<SafetyPage> {
   Widget _buildHotlinesCard(ThemeData theme) {
     return AppCard(
       variant: AppCardVariant.elevated,
+      borderRadius: AppRadius.r16,
       padding: const EdgeInsets.all(AppSpacing.s16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(
-                Icons.phone_in_talk_rounded,
-                color: Colors.redAccent,
-                size: 20,
+              Container(
+                width: 32,
+                height: 32,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.error.withAlpha(20),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.phone_in_talk_rounded,
+                  color: theme.colorScheme.error,
+                  size: 16,
+                ),
               ),
-              const SizedBox(width: 8),
-              Text(
-                'Emergency Hotlines',
-                style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Emergency Hotlines',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surfaceContainerHighest.withAlpha(120),
+                  borderRadius: AppRadius.borderPill,
+                ),
+                child: Text(
+                  '24/7 Global',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: theme.colorScheme.onSurface.withAlpha(150),
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.s8),
-          Text(
-            '• International Emergency: 112 (Europe, India & global roaming)\n• USA & Canada: 911\n• UK: 999\n• Australia: 000',
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurface.withAlpha(180),
-              height: 1.5,
+          const SizedBox(height: AppSpacing.s12),
+          _buildHotlineRow(theme, 'International Emergency', '112', note: 'Europe, India & global roaming'),
+          _buildHotlineRow(theme, 'USA & Canada', '911'),
+          _buildHotlineRow(theme, 'United Kingdom', '999'),
+          _buildHotlineRow(theme, 'Australia', '000', isLast: true),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHotlineRow(
+    ThemeData theme,
+    String region,
+    String dialCode, {
+    String? note,
+    bool isLast = false,
+  }) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: isLast ? 0 : 7),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  region,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                  ),
+                ),
+                if (note != null)
+                  Text(
+                    note,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      fontSize: 10.5,
+                      color: theme.colorScheme.onSurface.withAlpha(130),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.error.withAlpha(16),
+              borderRadius: AppRadius.borderPill,
+              border: Border.all(
+                color: theme.colorScheme.error.withAlpha(40),
+                width: 0.8,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.call_rounded,
+                  size: 11,
+                  color: theme.colorScheme.error,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  dialCode,
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.error,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
             ),
           ),
         ],

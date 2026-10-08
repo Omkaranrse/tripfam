@@ -102,7 +102,7 @@ class _IntroCallCardState extends ConsumerState<IntroCallCard> {
 
     return AppCard(
       variant: AppCardVariant.elevated,
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -112,35 +112,38 @@ class _IntroCallCardState extends ConsumerState<IntroCallCard> {
                 child: Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
                         color: call.isBothConfirmed
-                            ? Colors.green.withAlpha(30)
-                            : theme.colorScheme.primary.withAlpha(25),
+                            ? Colors.green.withAlpha(25)
+                            : theme.colorScheme.primary.withAlpha(20),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
                         call.isBothConfirmed
                             ? Icons.lock_open_rounded
                             : Icons.video_camera_front_rounded,
-                        size: 20,
+                        size: 17,
                         color: call.isBothConfirmed
                             ? Colors.green
                             : theme.colorScheme.primary,
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         call.isBothConfirmed
                             ? 'Chat Unlocked'
                             : (call.isScheduled
-                                  ? 'Intro Call Scheduled'
-                                  : 'Intro Call Needed'),
+                                ? 'Intro Call Scheduled'
+                                : 'Intro Call Needed'),
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
+                          fontSize: 13.5,
                           color: call.isBothConfirmed
-                              ? Colors.green.shade800
+                              ? (theme.brightness == Brightness.dark
+                                  ? Colors.green.shade300
+                                  : Colors.green.shade800)
                               : theme.colorScheme.onSurface,
                         ),
                         maxLines: 1,
@@ -157,15 +160,22 @@ class _IntroCallCardState extends ConsumerState<IntroCallCard> {
                     introCall: call,
                     tripId: widget.joinRequest.tripId,
                   ),
-                  icon: const Icon(Icons.edit_calendar_outlined, size: 16),
-                  label: const Text('Reschedule'),
+                  icon: const Icon(Icons.edit_calendar_outlined, size: 14),
+                  label: const Text(
+                    'Reschedule',
+                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+                  ),
                   style: TextButton.styleFrom(
                     visualDensity: VisualDensity.compact,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
                   ),
                 ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 10),
 
           if (call.isScheduled) ...[
             // Scheduled time
@@ -173,22 +183,23 @@ class _IntroCallCardState extends ConsumerState<IntroCallCard> {
               children: [
                 Icon(
                   Icons.access_time_rounded,
-                  size: 16,
+                  size: 14,
                   color: theme.colorScheme.onSurface.withAlpha(160),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 6),
                 Expanded(
                   child: Text(
                     '${call.scheduledAt!.day}/${call.scheduledAt!.month}/${call.scheduledAt!.year} at ${_formatTime(call.scheduledAt!)}',
                     style: theme.textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w600,
+                      fontSize: 12,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
 
             // Meeting Link Button & Copy
             Row(
@@ -199,19 +210,19 @@ class _IntroCallCardState extends ConsumerState<IntroCallCard> {
                     borderRadius: BorderRadius.circular(8),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 8,
+                        horizontal: 8,
+                        vertical: 6,
                       ),
                       decoration: BoxDecoration(
                         color: theme.colorScheme.surfaceContainerHighest
-                            .withAlpha(120),
+                            .withAlpha(100),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
                         children: [
                           Icon(
                             Icons.link,
-                            size: 16,
+                            size: 14,
                             color: theme.colorScheme.primary,
                           ),
                           const SizedBox(width: 6),
@@ -220,6 +231,7 @@ class _IntroCallCardState extends ConsumerState<IntroCallCard> {
                               '$serviceType: ${call.meetingLink}',
                               style: theme.textTheme.bodySmall?.copyWith(
                                 color: theme.colorScheme.primary,
+                                fontSize: 11,
                                 decoration: TextDecoration.underline,
                               ),
                               overflow: TextOverflow.ellipsis,
@@ -230,10 +242,15 @@ class _IntroCallCardState extends ConsumerState<IntroCallCard> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(width: 4),
                 IconButton(
-                  icon: const Icon(Icons.copy_rounded, size: 18),
+                  icon: const Icon(Icons.copy_rounded, size: 16),
                   tooltip: 'Copy link',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(
+                    minWidth: 32,
+                    minHeight: 32,
+                  ),
                   onPressed: () {
                     Clipboard.setData(ClipboardData(text: call.meetingLink!));
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -243,11 +260,11 @@ class _IntroCallCardState extends ConsumerState<IntroCallCard> {
                 ),
               ],
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 10),
 
             // Dual confirmation trackers
             Wrap(
-              spacing: 8,
+              spacing: 6,
               runSpacing: 6,
               children: [
                 _buildConfirmationBadge(
@@ -265,14 +282,16 @@ class _IntroCallCardState extends ConsumerState<IntroCallCard> {
           ] else ...[
             Text(
               'Either side can propose a time and share a meeting link to get the intro call rolling.',
-              style: theme.textTheme.bodyMedium?.copyWith(
+              style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurface.withAlpha(160),
+                fontSize: 11.5,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             AppButton(
               label: 'Schedule Intro Call',
               icon: Icons.calendar_month_rounded,
+              size: AppButtonSize.small,
               onPressed: () => IntroCallDialog.show(
                 context,
                 introCall: call,
@@ -283,18 +302,19 @@ class _IntroCallCardState extends ConsumerState<IntroCallCard> {
           ],
 
           if (_errorMsg != null) ...[
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             Text(
               _errorMsg!,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.error,
+                fontSize: 11,
               ),
             ),
           ],
 
           // Action button
           if (call.isScheduled && !call.isBothConfirmed) ...[
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
               child: hasUserConfirmed
@@ -303,12 +323,21 @@ class _IntroCallCardState extends ConsumerState<IntroCallCard> {
                       icon: const Icon(
                         Icons.check_circle_rounded,
                         color: Colors.green,
+                        size: 15,
                       ),
-                      label: Text('You confirmed · Awaiting $otherRoleLabel'),
+                      label: Text(
+                        'You confirmed · Awaiting $otherRoleLabel',
+                        style: const TextStyle(fontSize: 11.5),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                      ),
                     )
                   : AppButton(
                       label: 'Confirm Intro Call Done',
                       icon: Icons.check_circle_outline_rounded,
+                      size: AppButtonSize.small,
+                      isFullWidth: true,
                       isLoading: _isConfirming,
                       onPressed: _handleConfirm,
                       variant: AppButtonVariant.primary,
@@ -317,12 +346,14 @@ class _IntroCallCardState extends ConsumerState<IntroCallCard> {
           ],
 
           if (call.isBothConfirmed) ...[
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
               child: AppButton(
                 label: 'Open Trip Group Chat',
                 icon: Icons.chat_rounded,
+                size: AppButtonSize.small,
+                isFullWidth: true,
                 onPressed: () => context.go('/chats'),
                 variant: AppButtonVariant.primary,
               ),
@@ -340,12 +371,12 @@ class _IntroCallCardState extends ConsumerState<IntroCallCard> {
   }) {
     final theme = Theme.of(context);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
         color: isConfirmed
             ? Colors.green.withAlpha(20)
             : theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(
           color: isConfirmed ? Colors.green.withAlpha(100) : Colors.transparent,
         ),
@@ -355,19 +386,22 @@ class _IntroCallCardState extends ConsumerState<IntroCallCard> {
         children: [
           Icon(
             isConfirmed ? Icons.check_circle : Icons.hourglass_empty_rounded,
-            size: 14,
+            size: 12,
             color: isConfirmed
                 ? Colors.green
                 : theme.colorScheme.onSurface.withAlpha(140),
           ),
-          const SizedBox(width: 6),
+          const SizedBox(width: 4),
           Text(
             '$label: ${isConfirmed ? 'Confirmed' : 'Pending'}',
             style: theme.textTheme.labelSmall?.copyWith(
               color: isConfirmed
-                  ? Colors.green.shade800
+                  ? (theme.brightness == Brightness.dark
+                      ? Colors.green.shade300
+                      : Colors.green.shade800)
                   : theme.colorScheme.onSurface.withAlpha(160),
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w600,
+              fontSize: 10,
             ),
           ),
         ],

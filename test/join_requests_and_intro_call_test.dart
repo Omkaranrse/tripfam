@@ -1,7 +1,12 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tripfam/core/demo/demo_data.dart';
 import 'package:tripfam/core/utils/meeting_link_validator.dart';
+import 'package:tripfam/core/widgets/destination_image.dart';
 import 'package:tripfam/features/trips/data/join_request_repository.dart';
 import 'package:tripfam/features/trips/domain/join_request.dart';
+import 'package:tripfam/features/trips/presentation/widgets/join_request_form_sheet.dart';
 
 void main() {
   group('MeetingLinkValidator Security Tests', () {
@@ -258,4 +263,70 @@ void main() {
       );
     });
   });
+
+  group('DestinationImage & JoinRequestFormSheet Widget Tests', () {
+    testWidgets('Multiple DestinationImage widgets with same tripId render without Hero conflict', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: Column(
+              children: [
+                DestinationImage(
+                  tripId: 'trip-rishikesh',
+                  destination: 'Rishikesh',
+                  height: 80,
+                  width: 80,
+                ),
+                DestinationImage(
+                  tripId: 'trip-rishikesh',
+                  destination: 'Rishikesh',
+                  height: 80,
+                  width: 80,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      expect(find.byType(DestinationImage), findsNWidgets(2));
+    });
+
+    testWidgets('JoinRequestFormSheet displays trip info, accepts prompt tap, and submits', (tester) async {
+      final trip = DemoTrips.all.firstWhere((t) => t.id == 'trip-rishikesh');
+
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: JoinRequestFormSheet(trip: trip),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Check destination is rendered
+      expect(find.textContaining('Rishikesh'), findsWidgets);
+
+      // Tap on a prompt chip
+      final promptChip = find.text('👋 Excited to join this crew!');
+      expect(promptChip, findsOneWidget);
+      await tester.tap(promptChip);
+      await tester.pump();
+
+      // Verify text field got populated
+      expect(find.textContaining('Excited to join this crew!'), findsWidgets);
+
+      // Tap Submit Join Request
+      final submitBtn = find.text('Submit Join Request');
+      expect(submitBtn, findsOneWidget);
+      await tester.tap(submitBtn);
+      await tester.pumpAndSettle();
+
+      // Verify submission feedback
+      expect(find.text('Join Request Submitted'), findsOneWidget);
+    });
+  });
 }
+

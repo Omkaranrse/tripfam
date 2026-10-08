@@ -28,10 +28,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final profileAsync = ref.watch(userProfileProvider);
     final themeMode = ref.watch(themeModeControllerProvider);
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final semantic = theme.extension<AppSemanticColors>() ??
-        (theme.brightness == Brightness.dark
-            ? AppSemanticColors.dark
-            : AppSemanticColors.light);
+        (isDark ? AppSemanticColors.dark : AppSemanticColors.light);
 
     return Scaffold(
       body: profileAsync.when(
@@ -58,70 +57,91 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           final bio = profile?.bio ?? 'No bio added yet.';
           final travelStyle = profile?.travelStyle ?? {};
 
+          // Filter out internal stats/metadata from genuine travel style preferences
+          final styleChips = travelStyle.entries.where((e) {
+            final key = e.key.toLowerCase();
+            if (key == 'trips_completed' ||
+                key == 'trips_hosted' ||
+                key == 'safety_status') {
+              return false;
+            }
+            if (e.value is num) return false;
+            return true;
+          }).toList();
+
           return ListView(
-            padding: AppSpacing.pagePaddingInsets(context, vertical: 8),
+            padding: AppSpacing.pagePaddingInsets(context, vertical: 12),
             children: [
-              Wrap(
-                alignment: WrapAlignment.spaceBetween,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                spacing: AppSpacing.s12,
-                runSpacing: AppSpacing.s12,
+              // Header Section with in-line Edit action
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Profile & Settings',
-                        style: theme.textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Profile & Settings',
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: -0.4,
+                            fontSize: 21,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Manage your traveller identity and account preferences.',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurface.withAlpha(160),
+                        const SizedBox(height: 3),
+                        Text(
+                          'Manage your traveller identity and account preferences.',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurface.withAlpha(150),
+                            fontSize: 12.5,
+                            height: 1.3,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
+                  const SizedBox(width: AppSpacing.s12),
                   AppButton(
                     label: 'Edit',
                     icon: Icons.edit_outlined,
                     variant: AppButtonVariant.outlined,
                     size: AppButtonSize.small,
+                    isPill: true,
                     onPressed: () => context.push('/profile/edit'),
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.s16),
 
-              // User Info Card
+              // 1. User Info Card
               AppCard(
-                variant: AppCardVariant.outlined,
-                padding: const EdgeInsets.all(20),
+                variant: AppCardVariant.elevated,
+                borderRadius: AppRadius.r16,
+                padding: const EdgeInsets.all(AppSpacing.s16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
                         CircleAvatar(
-                          radius: 36,
-                          backgroundColor: theme.colorScheme.primary.withAlpha(
-                            25,
-                          ),
+                          radius: 32,
+                          backgroundColor: theme.colorScheme.primary.withAlpha(25),
                           backgroundImage: _signedAvatarUrl != null
                               ? NetworkImage(_signedAvatarUrl!)
                               : null,
                           child: _signedAvatarUrl == null
                               ? Icon(
                                   Icons.person_rounded,
-                                  size: 42,
+                                  size: 36,
                                   color: theme.colorScheme.primary,
                                 )
                               : null,
                         ),
-                        const SizedBox(width: 16),
+                        const SizedBox(width: 14),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -131,10 +151,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                                   Flexible(
                                     child: Text(
                                       displayName,
-                                      style: theme.textTheme.titleMedium
-                                          ?.copyWith(
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                                      style: theme.textTheme.titleMedium?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                        letterSpacing: -0.2,
+                                      ),
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
@@ -148,16 +169,15 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                                   Icon(
                                     Icons.location_on_outlined,
                                     size: 14,
-                                    color: theme.colorScheme.onSurface
-                                        .withAlpha(140),
+                                    color: theme.colorScheme.onSurface.withAlpha(140),
                                   ),
                                   const SizedBox(width: 4),
                                   Expanded(
                                     child: Text(
                                       homeCity,
                                       style: theme.textTheme.bodySmall?.copyWith(
-                                        color: theme.colorScheme.onSurface
-                                            .withAlpha(160),
+                                        color: theme.colorScheme.onSurface.withAlpha(160),
+                                        fontSize: 12.5,
                                       ),
                                       overflow: TextOverflow.ellipsis,
                                     ),
@@ -169,38 +189,45 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
-                    Divider(color: theme.colorScheme.outline.withAlpha(60)),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 14),
+                    Divider(color: theme.colorScheme.outlineVariant.withAlpha(50), height: 1),
+                    const SizedBox(height: 10),
                     Text(
                       'About Me',
                       style: theme.textTheme.labelMedium?.copyWith(
                         fontWeight: FontWeight.bold,
+                        fontSize: 12.5,
+                        letterSpacing: -0.1,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       bio,
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurface.withAlpha(180),
+                        color: theme.colorScheme.onSurface.withAlpha(170),
+                        fontSize: 12.5,
+                        height: 1.4,
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.s12),
 
-              // Identity Verification Card
+              // 2. Identity Verification Card
               AppCard(
-                variant: AppCardVariant.outlined,
-                padding: const EdgeInsets.all(16),
+                variant: AppCardVariant.elevated,
+                borderRadius: AppRadius.r16,
+                padding: const EdgeInsets.all(AppSpacing.s16),
                 child: Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(10),
+                      width: 36,
+                      height: 36,
+                      alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: isVerified
-                            ? semantic.success.withAlpha(30)
+                            ? semantic.success.withAlpha(25)
                             : theme.colorScheme.primaryContainer.withAlpha(50),
                         shape: BoxShape.circle,
                       ),
@@ -211,13 +238,14 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                         color: isVerified
                             ? semantic.success
                             : theme.colorScheme.primary,
-                        size: 24,
+                        size: 20,
                       ),
                     ),
-                    const SizedBox(width: 14),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
                             isVerified
@@ -225,6 +253,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                                 : 'Identity Verification',
                             style: theme.textTheme.titleSmall?.copyWith(
                               fontWeight: FontWeight.bold,
+                              fontSize: 14,
                             ),
                           ),
                           const SizedBox(height: 2),
@@ -233,26 +262,32 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                                 ? 'Your identity is confirmed by our moderation team.'
                                 : 'Complete a quick live selfie check to get verified.',
                             style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurface.withAlpha(160),
+                              color: theme.colorScheme.onSurface.withAlpha(150),
+                              fontSize: 11.5,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    OutlinedButton(
+                    const SizedBox(width: 10),
+                    AppButton(
+                      label: isVerified ? 'View' : 'Verify',
+                      variant: AppButtonVariant.outlined,
+                      size: AppButtonSize.small,
+                      isPill: true,
                       onPressed: () => context.push('/verification'),
-                      child: Text(isVerified ? 'View' : 'Verify'),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.s12),
 
               // Staff review dashboard access for staff/admin users
               if (profile?.role == 'staff' || profile?.role == 'admin') ...[
                 AppCard(
                   variant: AppCardVariant.elevated,
-                  padding: const EdgeInsets.all(16),
+                  borderRadius: AppRadius.r16,
+                  padding: const EdgeInsets.all(AppSpacing.s16),
                   child: Row(
                     children: [
                       const Icon(
@@ -282,53 +317,61 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.s12),
               ],
 
-              // Travel Style Card
-              if (travelStyle.isNotEmpty)
+              // 3. Travel Style Card (Clean Preferences without raw stats)
+              if (styleChips.isNotEmpty)
                 AppCard(
-                  variant: AppCardVariant.outlined,
-                  padding: const EdgeInsets.all(20),
+                  variant: AppCardVariant.elevated,
+                  borderRadius: AppRadius.r16,
+                  padding: const EdgeInsets.all(AppSpacing.s16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
-                          Icon(
-                            Icons.explore_outlined,
-                            color: theme.colorScheme.primary,
-                            size: 20,
+                          Container(
+                            width: 32,
+                            height: 32,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.primary.withAlpha(20),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.explore_outlined,
+                              color: theme.colorScheme.primary,
+                              size: 17,
+                            ),
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 10),
                           Text(
                             'Travel Style',
                             style: theme.textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                              letterSpacing: -0.2,
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 14),
+                      const SizedBox(height: 12),
                       Wrap(
                         spacing: 8,
                         runSpacing: 8,
                         children: [
-                          for (final entry in travelStyle.entries)
+                          for (final entry in styleChips)
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
+                                horizontal: 10,
+                                vertical: 5,
                               ),
                               decoration: BoxDecoration(
-                                color: theme.colorScheme.primary.withAlpha(20),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.fromBorderSide(
-                                  BorderSide(
-                                    color: theme.colorScheme.primary.withAlpha(
-                                      50,
-                                    ),
-                                  ),
+                                color: theme.colorScheme.primary.withAlpha(16),
+                                borderRadius: AppRadius.borderPill,
+                                border: Border.all(
+                                  color: theme.colorScheme.primary.withAlpha(45),
                                 ),
                               ),
                               child: Text(
@@ -336,6 +379,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                                 style: theme.textTheme.bodySmall?.copyWith(
                                   color: theme.colorScheme.primary,
                                   fontWeight: FontWeight.w600,
+                                  fontSize: 11.5,
                                 ),
                               ),
                             ),
@@ -344,102 +388,225 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                     ],
                   ),
                 ),
-              // Privacy & Legal Card
+              if (styleChips.isNotEmpty) const SizedBox(height: AppSpacing.s12),
+
+              // 4. Privacy & Legal Card
               AppCard(
-                variant: AppCardVariant.outlined,
-                padding: const EdgeInsets.all(16),
+                variant: AppCardVariant.elevated,
+                borderRadius: AppRadius.r16,
+                padding: const EdgeInsets.all(AppSpacing.s16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        Icon(
-                          Icons.privacy_tip_outlined,
-                          size: 20,
-                          color: theme.colorScheme.primary,
+                        Container(
+                          width: 32,
+                          height: 32,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primary.withAlpha(20),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.privacy_tip_outlined,
+                            size: 17,
+                            color: theme.colorScheme.primary,
+                          ),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 10),
                         Text(
                           'Privacy & Safety',
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                            letterSpacing: -0.2,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      visualDensity: VisualDensity.compact,
+                      leading: Container(
+                        width: 32,
+                        height: 32,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surfaceContainerHighest.withAlpha(120),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.download_rounded,
+                          size: 16,
+                          color: theme.colorScheme.onSurface.withAlpha(180),
+                        ),
+                      ),
+                      title: const Text(
+                        'Export my data',
+                        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5),
+                      ),
+                      subtitle: Text(
+                        'Download a machine-readable JSON copy of your records',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          color: theme.colorScheme.onSurface.withAlpha(140),
+                        ),
+                      ),
+                      trailing: _isExporting
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : Icon(
+                              Icons.chevron_right_rounded,
+                              size: 20,
+                              color: theme.colorScheme.onSurface.withAlpha(120),
+                            ),
+                      onTap: _isExporting ? null : _handleExportData,
+                    ),
+                    Divider(
+                      color: theme.colorScheme.outlineVariant.withAlpha(40),
+                      height: 1,
+                    ),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      visualDensity: VisualDensity.compact,
+                      leading: Container(
+                        width: 32,
+                        height: 32,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surfaceContainerHighest.withAlpha(120),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.policy_outlined,
+                          size: 16,
+                          color: theme.colorScheme.onSurface.withAlpha(180),
+                        ),
+                      ),
+                      title: const Text(
+                        'Privacy Policy',
+                        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5),
+                      ),
+                      trailing: Icon(
+                        Icons.chevron_right_rounded,
+                        size: 20,
+                        color: theme.colorScheme.onSurface.withAlpha(120),
+                      ),
+                      onTap: () => context.push('/privacy-policy'),
+                    ),
+                    Divider(
+                      color: theme.colorScheme.outlineVariant.withAlpha(40),
+                      height: 1,
+                    ),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      visualDensity: VisualDensity.compact,
+                      leading: Container(
+                        width: 32,
+                        height: 32,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surfaceContainerHighest.withAlpha(120),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.description_outlined,
+                          size: 16,
+                          color: theme.colorScheme.onSurface.withAlpha(180),
+                        ),
+                      ),
+                      title: const Text(
+                        'Terms of Service',
+                        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5),
+                      ),
+                      trailing: Icon(
+                        Icons.chevron_right_rounded,
+                        size: 20,
+                        color: theme.colorScheme.onSurface.withAlpha(120),
+                      ),
+                      onTap: () => context.push('/terms'),
+                    ),
+                    Divider(
+                      color: theme.colorScheme.outlineVariant.withAlpha(40),
+                      height: 1,
+                    ),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      visualDensity: VisualDensity.compact,
+                      leading: Container(
+                        width: 32,
+                        height: 32,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surfaceContainerHighest.withAlpha(120),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.shield_outlined,
+                          size: 16,
+                          color: theme.colorScheme.onSurface.withAlpha(180),
+                        ),
+                      ),
+                      title: const Text(
+                        'Community Safety Guide',
+                        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5),
+                      ),
+                      trailing: Icon(
+                        Icons.chevron_right_rounded,
+                        size: 20,
+                        color: theme.colorScheme.onSurface.withAlpha(120),
+                      ),
+                      onTap: () => context.push('/safety-guide'),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.s12),
+
+              // 5. Appearance Card
+              AppCard(
+                variant: AppCardVariant.elevated,
+                borderRadius: AppRadius.r16,
+                padding: const EdgeInsets.all(AppSpacing.s16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 32,
+                          height: 32,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primary.withAlpha(20),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.palette_outlined,
+                            color: theme.colorScheme.primary,
+                            size: 17,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          'Appearance',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                            letterSpacing: -0.2,
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 12),
-                    ListTile(
-                      leading: const Icon(Icons.download_rounded),
-                      title: const Text('Export my data'),
-                      subtitle: const Text(
-                        'Download a machine-readable JSON copy of your records',
-                      ),
-                      trailing: _isExporting
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.chevron_right),
-                      onTap: _isExporting ? null : _handleExportData,
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                    const Divider(height: 1),
-                    ListTile(
-                      leading: const Icon(Icons.policy_outlined),
-                      title: const Text('Privacy Policy'),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: () => context.push('/privacy-policy'),
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                    const Divider(height: 1),
-                    ListTile(
-                      leading: const Icon(Icons.description_outlined),
-                      title: const Text('Terms of Service'),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: () => context.push('/terms'),
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                    const Divider(height: 1),
-                    ListTile(
-                      leading: const Icon(Icons.shield_outlined),
-                      title: const Text('Community Safety Guide'),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: () => context.push('/safety-guide'),
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Appearance Card
-              AppCard(
-                variant: AppCardVariant.outlined,
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.palette_outlined,
-                          color: theme.colorScheme.primary,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Appearance',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
                     Wrap(
-                      spacing: 10,
-                      runSpacing: 10,
+                      spacing: 8,
+                      runSpacing: 8,
                       children: [
                         for (final option in [
                           (
@@ -459,9 +626,38 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                           ),
                         ])
                           ChoiceChip(
-                            avatar: Icon(option.icon, size: 16),
+                            showCheckmark: false,
+                            avatar: Icon(
+                              option.icon,
+                              size: 15,
+                              color: themeMode == option.mode
+                                  ? (isDark ? AppTheme.darkForestSurfaceDark : Colors.white)
+                                  : theme.colorScheme.onSurface.withAlpha(160),
+                            ),
                             label: Text(option.label),
+                            labelStyle: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w600,
+                              color: themeMode == option.mode
+                                  ? (isDark ? AppTheme.darkForestSurfaceDark : Colors.white)
+                                  : theme.colorScheme.onSurface,
+                            ),
                             selected: themeMode == option.mode,
+                            selectedColor: isDark ? AppTheme.lime : theme.colorScheme.primary,
+                            backgroundColor: isDark
+                                ? Colors.white.withAlpha(10)
+                                : theme.colorScheme.surfaceContainerHighest.withAlpha(120),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: AppRadius.borderPill,
+                              side: BorderSide(
+                                color: themeMode == option.mode
+                                    ? Colors.transparent
+                                    : (isDark
+                                        ? Colors.white.withAlpha(20)
+                                        : theme.colorScheme.outlineVariant.withAlpha(70)),
+                              ),
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
                             onSelected: (_) => ref
                                 .read(themeModeControllerProvider.notifier)
                                 .setThemeMode(option.mode),
@@ -471,42 +667,47 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
 
-              // Actions: Sign out & Delete account
-              Row(
-                children: [
-                  Expanded(
-                    child: AppButton(
-                      label: 'Sign Out',
-                      icon: Icons.logout_rounded,
-                      variant: AppButtonVariant.outlined,
-                      onPressed: () async {
-                        await ref.read(authRepositoryProvider).signOut();
-                        if (context.mounted) {
-                          context.go('/login');
-                        }
-                      },
-                    ),
-                  ),
-                ],
+              // 6. Actions: Sign Out & Delete Account
+              SizedBox(
+                width: double.infinity,
+                child: AppButton(
+                  label: 'Sign Out',
+                  icon: Icons.logout_rounded,
+                  variant: AppButtonVariant.outlined,
+                  size: AppButtonSize.medium,
+                  isPill: true,
+                  onPressed: () async {
+                    await ref.read(authRepositoryProvider).signOut();
+                    if (context.mounted) {
+                      context.go('/login');
+                    }
+                  },
+                ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               Center(
                 child: TextButton.icon(
                   icon: Icon(
-                    Icons.delete_outline,
+                    Icons.delete_outline_rounded,
                     color: theme.colorScheme.error,
-                    size: 18,
+                    size: 17,
                   ),
                   label: Text(
                     'Delete Account',
-                    style: TextStyle(color: theme.colorScheme.error),
+                    style: TextStyle(
+                      color: theme.colorScheme.error,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   onPressed: () => _confirmDeleteAccount(context),
                 ),
               ),
-              const SizedBox(height: 24),
+
+              // Extra clearance for floating bottom navigation dock
+              const SizedBox(height: 108),
             ],
           );
         },
@@ -518,6 +719,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
       ),
     );
   }
+
 
   Future<void> _handleExportData() async {
     setState(() => _isExporting = true);

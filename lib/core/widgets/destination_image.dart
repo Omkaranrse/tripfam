@@ -15,6 +15,8 @@ class DestinationImage extends StatelessWidget {
     this.fit = BoxFit.cover,
     this.height,
     this.width,
+    this.useHero = false,
+    this.heroTag,
   });
 
   final String tripId;
@@ -24,6 +26,8 @@ class DestinationImage extends StatelessWidget {
   final BoxFit fit;
   final double? height;
   final double? width;
+  final bool useHero;
+  final Object? heroTag;
 
   static String getImageUrlForDestination(String destination, {String? tripId}) {
     final idx = tripId != null ? tripId.hashCode.abs() : 0;
@@ -73,7 +77,10 @@ class DestinationImage extends StatelessWidget {
       child: ClipRRect(borderRadius: borderRadius, child: inner),
     );
 
-    return Hero(tag: 'trip-image-$tripId', child: content);
+    if (useHero) {
+      return Hero(tag: heroTag ?? 'trip-image-$tripId', child: content);
+    }
+    return content;
   }
 
   Widget _buildShimmerPlaceholder(

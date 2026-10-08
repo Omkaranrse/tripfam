@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -45,58 +44,40 @@ class _MyTripsPageState extends ConsumerState<MyTripsPage>
     final theme = Theme.of(context);
 
     return Scaffold(
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 76),
-        child: FloatingActionButton.extended(
-          heroTag: 'my_trips_new_trip_fab',
-          onPressed: () {
-            HapticFeedback.selectionClick();
-            context.push('/trip/new');
-          },
-          icon: const Icon(Icons.add_rounded, size: 20),
-          label: const Text(
-            'New Trip',
-            style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: -0.2),
-          ),
-          backgroundColor: theme.colorScheme.primary,
-          foregroundColor: theme.colorScheme.onPrimary,
-          elevation: 4,
-          shape: const RoundedRectangleBorder(
-            borderRadius: AppRadius.borderPill,
-          ),
-        ),
-      ),
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
           SliverToBoxAdapter(
             child: Padding(
               padding: EdgeInsets.fromLTRB(
                 AppSpacing.pagePadding(context),
-                16,
-                AppSpacing.pagePadding(context),
                 12,
+                AppSpacing.pagePadding(context),
+                8,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     'My Trips',
-                    style: theme.textTheme.headlineSmall?.copyWith(
+                    style: theme.textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
-                      letterSpacing: -0.5,
+                      letterSpacing: -0.4,
+                      fontSize: 21,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 3),
                   Text(
                     'Manage your hosted departures and submitted join requests.',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurface.withAlpha(160),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurface.withAlpha(140),
+                      fontSize: 12.5,
                     ),
                   ),
-                  const SizedBox(height: AppSpacing.s16),
+                  const SizedBox(height: 12),
                   SegmentedTabs(
                     tabs: const ['Departures', 'Requests'],
                     selectedIndex: _tabController.index,
+                    height: 38.0,
                     onChanged: (index) {
                       _tabController.animateTo(index);
                     },
@@ -127,7 +108,7 @@ class _MyTripsPageState extends ConsumerState<MyTripsPage>
                           actionLabel: 'Explore Open Trips',
                           onActionPressed: () => context.go('/discover'),
                         ),
-                        const SizedBox(height: AppSpacing.s80),
+                        const SizedBox(height: 88),
                       ],
                     );
                   }
@@ -139,10 +120,10 @@ class _MyTripsPageState extends ConsumerState<MyTripsPage>
                     itemCount: trips.length + 1,
                     itemBuilder: (context, index) {
                       if (index == trips.length) {
-                        return const SizedBox(height: AppSpacing.s80);
+                        return const SizedBox(height: 88);
                       }
                       return Padding(
-                        padding: const EdgeInsets.only(bottom: AppSpacing.s12),
+                        padding: const EdgeInsets.only(bottom: 10),
                         child: _MyTripCard(trip: trips[index])
                             .animateEntrance(context: context, index: index),
                       );
@@ -191,10 +172,10 @@ class _MyTripsPageState extends ConsumerState<MyTripsPage>
                     itemCount: requests.length + 1,
                     itemBuilder: (context, index) {
                       if (index == requests.length) {
-                        return const SizedBox(height: AppSpacing.s80);
+                        return const SizedBox(height: 88);
                       }
                       return Padding(
-                        padding: const EdgeInsets.only(bottom: AppSpacing.s12),
+                        padding: const EdgeInsets.only(bottom: 10),
                         child: _MySubmittedRequestCard(request: requests[index])
                             .animateEntrance(context: context, index: index),
                       );
@@ -251,18 +232,18 @@ class _MyTripCardState extends State<_MyTripCard> {
       child: Container(
         decoration: BoxDecoration(
           color: cardBg,
-          borderRadius: AppRadius.border20,
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isDark
                 ? Colors.white.withAlpha(20)
-                : theme.colorScheme.outlineVariant.withAlpha(80),
+                : theme.colorScheme.outlineVariant.withAlpha(70),
             width: 1,
           ),
           boxShadow: AppShadows.subtle(context),
         ),
         child: Material(
           color: Colors.transparent,
-          borderRadius: AppRadius.border20,
+          borderRadius: BorderRadius.circular(16),
           child: InkWell(
             onTap: () => context.push(
               '/trip/${widget.trip.id}',
@@ -271,29 +252,29 @@ class _MyTripCardState extends State<_MyTripCard> {
             onTapDown: (_) => setState(() => _isPressed = true),
             onTapUp: (_) => setState(() => _isPressed = false),
             onTapCancel: () => setState(() => _isPressed = false),
-            borderRadius: AppRadius.border20,
+            borderRadius: BorderRadius.circular(16),
             child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.s12),
+              padding: const EdgeInsets.all(10),
               child: Row(
                 children: [
                   // Photo Thumbnail
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(12),
                     child: SizedBox(
-                      width: 80,
-                      height: 80,
+                      width: 72,
+                      height: 72,
                       child: DestinationImage(
                         tripId: 'mytrip-${widget.trip.id}',
                         destination: widget.trip.destination,
-                        width: 80,
-                        height: 80,
+                        width: 72,
+                        height: 72,
                         fit: BoxFit.cover,
                         aspectRatio: 1.0,
                         borderRadius: BorderRadius.zero,
                       ),
                     ),
                   ),
-                  const SizedBox(width: AppSpacing.s12),
+                  const SizedBox(width: 12),
 
                   // Info
                   Expanded(
@@ -323,7 +304,7 @@ class _MyTripCardState extends State<_MyTripCard> {
                                         color: isDark
                                             ? AppTheme.lime
                                             : theme.colorScheme.primary,
-                                        fontSize: 11,
+                                        fontSize: 10.5,
                                         fontWeight: FontWeight.w600,
                                       ),
                                       maxLines: 1,
@@ -336,66 +317,70 @@ class _MyTripCardState extends State<_MyTripCard> {
                             const SizedBox(width: 4),
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
+                                horizontal: 7,
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
                                 color: theme.colorScheme.primary.withAlpha(20),
-                                borderRadius: AppRadius.borderPill,
+                                borderRadius:
+                                    BorderRadius.circular(AppRadius.pill),
                               ),
                               child: Text(
                                 widget.trip.status.toUpperCase(),
-                                style: theme.textTheme.labelSmall?.copyWith(
+                                style: TextStyle(
+                                  fontFamily: 'Poppins',
                                   color: theme.colorScheme.primary,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 9,
-                                  letterSpacing: 0.6,
+                                  fontSize: 8.5,
+                                  letterSpacing: 0.5,
                                 ),
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 3),
 
                         // Title
                         Text(
                           widget.trip.destination,
                           style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: -0.3,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: -0.2,
+                            fontSize: 14,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 6),
+                        const SizedBox(height: 5),
 
                         // Members and places
                         Row(
                           children: [
                             Icon(
                               Icons.group_outlined,
-                              size: 13,
+                              size: 12,
                               color: theme.colorScheme.onSurface.withAlpha(140),
                             ),
                             const SizedBox(width: 4),
                             Text(
                               '${widget.trip.confirmedMembersCount}/${widget.trip.maxMembers} confirmed',
                               style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.colorScheme.onSurface.withAlpha(150),
-                                fontSize: 11,
+                                color:
+                                    theme.colorScheme.onSurface.withAlpha(150),
+                                fontSize: 10.5,
                               ),
                             ),
                             const Spacer(),
                             Container(
-                              width: 28,
-                              height: 28,
+                              width: 26,
+                              height: 26,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: theme.colorScheme.primary.withAlpha(25),
+                                color: theme.colorScheme.primary.withAlpha(20),
                               ),
                               child: Icon(
                                 Icons.arrow_forward_rounded,
-                                size: 14,
+                                size: 13,
                                 color: theme.colorScheme.primary,
                               ),
                             ),
@@ -429,16 +414,16 @@ class _MySubmittedRequestCard extends ConsumerWidget {
         color: isDark
             ? AppTheme.darkForestSurfaceDark
             : theme.colorScheme.surface,
-        borderRadius: AppRadius.border20,
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isDark
               ? Colors.white.withAlpha(20)
-              : theme.colorScheme.outlineVariant.withAlpha(80),
+              : theme.colorScheme.outlineVariant.withAlpha(70),
           width: 1,
         ),
         boxShadow: AppShadows.subtle(context),
       ),
-      padding: const EdgeInsets.all(AppSpacing.s16),
+      padding: const EdgeInsets.all(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -449,8 +434,9 @@ class _MySubmittedRequestCard extends ConsumerWidget {
                 child: Text(
                   request.tripDestination ?? 'Adventure Trip',
                   style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w600,
                     letterSpacing: -0.2,
+                    fontSize: 14.5,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -461,42 +447,56 @@ class _MySubmittedRequestCard extends ConsumerWidget {
                 style: TextButton.styleFrom(
                   visualDensity: VisualDensity.compact,
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
+                    horizontal: 8,
+                    vertical: 2,
                   ),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('View Trip'),
-                    SizedBox(width: 2),
-                    Icon(Icons.chevron_right_rounded, size: 16),
+                    Text(
+                      'View Trip',
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w600,
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
+                    const SizedBox(width: 2),
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      size: 15,
+                      color: theme.colorScheme.primary,
+                    ),
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           JoinRequestProgressStepper(stage: request.stage),
           if (request.message != null && request.message!.isNotEmpty) ...[
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
                 color: theme.colorScheme.surfaceContainerHighest.withAlpha(60),
-                borderRadius: AppRadius.border12,
+                borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
                 'Your note: "${request.message!}"',
-                style: theme.textTheme.bodySmall?.copyWith(
+                style: TextStyle(
+                  fontFamily: 'Poppins',
                   fontStyle: FontStyle.italic,
-                  color: theme.colorScheme.onSurface.withAlpha(160),
+                  fontSize: 11,
+                  color: theme.colorScheme.onSurface.withAlpha(150),
                 ),
               ),
             ),
           ],
           if (request.isAccepted && request.introCall != null) ...[
-            const SizedBox(height: 14),
+            const SizedBox(height: 10),
             IntroCallCard(joinRequest: request, isHost: false),
           ],
         ],

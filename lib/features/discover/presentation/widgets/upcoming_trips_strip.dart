@@ -89,72 +89,70 @@ class UpcomingTripsStrip extends StatelessWidget {
     required bool isDark,
     required ThemeData theme,
   }) {
-    // Gentle alternating tilt (-0.03 to +0.03 rad)
-    final tiltAngle = (index % 2 == 0) ? -0.03 : 0.03;
+    // Clean, punchy destination label (e.g., "Alibaug", "North Goa", "Rajmachi")
+    final shortDestination = trip.destination.split(',').first.trim();
 
     return Tooltip(
       message: 'Jump to ${trip.destination}',
       child: InkWell(
         onTap: () => onTapTrip(trip),
-        borderRadius: AppRadius.border12,
-        child: Transform.rotate(
-          angle: tiltAngle,
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: AppRadius.border12,
-              boxShadow: AppShadows.subtle(context),
-              border: Border.all(
-                color: isDark
-                    ? Colors.white.withAlpha(35)
-                    : theme.colorScheme.outline.withAlpha(70),
-                width: 1.5,
-              ),
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            boxShadow: AppShadows.subtle(context),
+            border: Border.all(
+              color: isDark
+                  ? Colors.white.withAlpha(35)
+                  : theme.colorScheme.outline.withAlpha(65),
+              width: 1.5,
             ),
-            child: ClipRRect(
-              borderRadius: AppRadius.border12,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  DestinationImage(
-                    tripId: trip.id,
-                    destination: trip.destination,
-                    aspectRatio: null,
-                    fit: BoxFit.cover,
-                  ),
-                  Positioned.fill(
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.transparent,
-                            Colors.black.withAlpha(190),
-                          ],
-                          stops: const [0.4, 1.0],
-                        ),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12.5),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                DestinationImage(
+                  tripId: trip.id,
+                  destination: trip.destination,
+                  aspectRatio: null,
+                  fit: BoxFit.cover,
+                ),
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withAlpha(205),
+                        ],
+                        stops: const [0.35, 1.0],
                       ),
                     ),
                   ),
-                  Positioned(
-                    left: 4,
-                    right: 4,
-                    bottom: 4,
-                    child: Text(
-                      trip.destination,
-                      style: const TextStyle(
-                        fontFamily: 'Poppins',
-                        color: Colors.white,
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w700,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
+                ),
+                Positioned(
+                  left: 4,
+                  right: 4,
+                  bottom: 6,
+                  child: Text(
+                    shortDestination,
+                    style: const TextStyle(
+                      fontFamily: 'Poppins',
+                      color: Colors.white,
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.1,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),

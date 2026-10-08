@@ -7,6 +7,7 @@ import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_widgets.dart';
 import '../../account/data/profile_repository.dart';
 import '../../trips/domain/trip.dart';
+import '../../trips/presentation/widgets/join_request_form_sheet.dart';
 import '../domain/deck_config.dart';
 import 'controllers/deck_controller.dart';
 import 'trip_filter_sheet.dart';
@@ -50,7 +51,7 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
   }
 
   void _openTripDetails(Trip trip) {
-    context.push('/trip/${trip.id}');
+    JoinRequestFormSheet.show(context, trip);
   }
 
   Future<void> _handleSwipe(SwipeDirection direction) async {
@@ -74,10 +75,13 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
         ? userProfile!.displayName.trim().split(' ').first
         : 'Explorer';
 
-    // Deck width and height: sized to fit perfectly within the single screen frame
+    // Responsive deck sizing: Proportioned to gracefully fill the mobile viewport
+    // without overflowing or leaving awkward dead voids above the floating bottom dock.
+    final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     final deckWidth = (screenWidth - 40.0).clamp(300.0, 370.0);
-    final deckHeight = (deckWidth * 0.88).clamp(270.0, 320.0);
+    final deckHeight =
+        (deckWidth * 1.10).clamp(335.0, (screenHeight * 0.46).clamp(340.0, 415.0));
 
     return Focus(
       focusNode: _focusNode,
@@ -114,7 +118,7 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 6),
 
                     // 1. HEADER: Avatar + Greeting, Bell, Saved Trips Bookmark with Badge
                     Padding(
@@ -126,7 +130,7 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
                         children: [
                           // User Avatar
                           CircleAvatar(
-                            radius: 22,
+                            radius: 20,
                             backgroundColor:
                                 theme.colorScheme.primary.withAlpha(35),
                             backgroundImage: userProfile?.avatarPath != null
@@ -138,12 +142,12 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       color: theme.colorScheme.primary,
-                                      fontSize: 16,
+                                      fontSize: 15,
                                     ),
                                   )
                                 : null,
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 10),
 
                           // Greeting & Title
                           Expanded(
@@ -155,6 +159,8 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
                                   style: theme.textTheme.bodySmall?.copyWith(
                                     color: theme.colorScheme.onSurface
                                         .withAlpha(160),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -165,6 +171,7 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
                                       theme.textTheme.titleMedium?.copyWith(
                                     fontWeight: FontWeight.bold,
                                     letterSpacing: -0.2,
+                                    fontSize: 16.5,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -175,14 +182,14 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
 
                           const SizedBox(width: 8),
 
-                          // Host Trip Action Button (replaces notification bell)
+                          // Host Trip Action Button (Compact modern pill)
                           FilledButton.icon(
                             style: FilledButton.styleFrom(
                               backgroundColor: theme.colorScheme.primary,
                               foregroundColor: theme.colorScheme.onPrimary,
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 7,
+                                horizontal: 10,
+                                vertical: 6,
                               ),
                               minimumSize: Size.zero,
                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -193,11 +200,11 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
                             ),
                             onPressed: () => context.push('/trip/new'),
                             icon: const Icon(
-                              Icons.add_location_alt_rounded,
+                              Icons.add_rounded,
                               size: 16,
                             ),
                             label: const Text(
-                              'Host Trip',
+                              'Host',
                               style: TextStyle(
                                 fontFamily: 'Poppins',
                                 fontSize: 12,
@@ -212,12 +219,20 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
                             label: 'Saved Trips, $savedCount saved',
                             button: true,
                             child: IconButton(
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(
+                                minWidth: 38,
+                                minHeight: 38,
+                              ),
                               icon: Badge(
                                 isLabelVisible: savedCount > 0,
                                 label: Text('$savedCount'),
                                 backgroundColor: const Color(0xFFC6E062),
                                 textColor: const Color(0xFF132219),
-                                child: const Icon(Icons.bookmark_outline_rounded),
+                                child: const Icon(
+                                  Icons.bookmark_outline_rounded,
+                                  size: 22,
+                                ),
                               ),
                               tooltip: 'Saved Trips ($savedCount)',
                               onPressed: () => context.push('/saved-trips'),

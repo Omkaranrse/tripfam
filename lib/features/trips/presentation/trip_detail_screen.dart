@@ -13,6 +13,7 @@ import '../domain/join_request.dart';
 import '../domain/travel_compatibility.dart';
 import '../domain/trip.dart';
 import 'widgets/intro_call_card.dart';
+import 'widgets/join_request_form_sheet.dart';
 import 'widgets/join_request_progress_stepper.dart';
 
 class TripDetailScreen extends ConsumerStatefulWidget {
@@ -27,7 +28,6 @@ class TripDetailScreen extends ConsumerStatefulWidget {
 class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
   Trip? _trip;
   bool _isLoading = true;
-  bool _isRequesting = false;
   bool _hasRequested = false;
   bool _isMember = false;
   bool _isFavorite = false;
@@ -73,105 +73,10 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
   }
 
   Future<void> _handleRequestToJoin() async {
-    final profile = ref.read(userProfileProvider).value;
-    if (_trip?.requiresVerifiedMembers == true && profile?.isVerified != true) {
-      final verifyNow = await showDialog<bool>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: Row(
-            children: [
-              Icon(
-                Icons.verified_user_outlined,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              const SizedBox(width: 8),
-              const Text('Verification Required'),
-            ],
-          ),
-          content: const Text(
-            'The host has marked this departure for identity-verified travellers only.\n\n'
-            'Please complete your selfie verification (reviewed manually by staff) to submit a join request.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(false),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(ctx).pop(true),
-              child: const Text('Verify Now'),
-            ),
-          ],
-        ),
-      );
-      if (verifyNow == true && mounted) {
-        await context.push('/verification');
-      }
-      return;
-    }
-
-    final noteController = TextEditingController();
-
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Request to Join Trip'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Introduce yourself to the host and fellow travellers before scheduling your intro call.',
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: noteController,
-              decoration: const InputDecoration(
-                hintText: 'Share why you\'re excited for this trip...',
-                border: OutlineInputBorder(),
-              ),
-              maxLines: 3,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Submit Request'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed != true) return;
-
-    setState(() => _isRequesting = true);
-    try {
-      await ref
-          .read(tripRepositoryProvider)
-          .requestToJoin(widget.tripId, message: noteController.text);
-      setState(() => _hasRequested = true);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Request sent! The host will review and schedule an intro call.',
-            ),
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        AppErrorHandler.showSafeSnackBar(context, e);
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isRequesting = false);
-      }
+    if (_trip == null) return;
+    await JoinRequestFormSheet.show(context, _trip!);
+    if (mounted) {
+      await _loadTrip();
     }
   }
 
@@ -402,7 +307,9 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
               offset: const Offset(0, -4),
             ),
           ],
-          child: Center(
+          child: Align(
+            alignment: Alignment.center,
+            heightFactor: 1.0,
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 1200),
               child: _buildStickyBottomAction(
@@ -1068,13 +975,35 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
     }
 
     if (userRequest != null || _hasRequested) {
-      return Center(
-        child: Text(
-          'Join Request Submitted',
-          style: theme.textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: theme.colorScheme.secondary,
+      return Container(
+        height: 48,
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.secondary.withAlpha(20),
+          borderRadius: AppRadius.borderPill,
+          border: Border.all(
+            color: theme.colorScheme.secondary.withAlpha(60),
           ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.hourglass_top_rounded,
+              size: 18,
+              color: theme.colorScheme.secondary,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'Join Request Submitted',
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.secondary,
+              ),
+            ),
+          ],
         ),
       );
     }
@@ -1084,7 +1013,6 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
           ? 'Request to Join Adventure'
           : 'Trip is Full',
       icon: Icons.group_add_rounded,
-      isLoading: _isRequesting,
       isPill: true,
       isFullWidth: true,
       onPressed: trip.availablePlaces > 0 ? _handleRequestToJoin : null,
