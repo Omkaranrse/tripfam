@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import 'app_tokens.dart';
+import 'glass_theme.dart';
 
 export 'app_tokens.dart';
+export 'glass_theme.dart';
 
 abstract final class AppTheme {
   // Soft Sage-Green Travel UI Light Palette
@@ -142,24 +144,35 @@ abstract final class AppTheme {
       dividerTheme: DividerThemeData(color: border, thickness: 1),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: Colors.transparent,
-        indicatorColor: const Color(0xFFC6E062).withAlpha(45),
+        surfaceTintColor: Colors.transparent,
+        indicatorColor: const Color(0xFFC6E062),
+        indicatorShape: const StadiumBorder(),
         elevation: 0,
         height: 60,
         labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
             return textTheme.labelSmall?.copyWith(
-              color: const Color(0xFFC6E062),
+              color: const Color(0xFF132219),
               fontWeight: FontWeight.w600,
             );
           }
-          return textTheme.labelSmall?.copyWith(color: Colors.white.withAlpha(170));
+          return textTheme.labelSmall?.copyWith(
+            color: const Color(0xFFDCE6DF),
+            fontWeight: FontWeight.w500,
+          );
         }),
         iconTheme: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return const IconThemeData(color: Color(0xFFC6E062), size: 22);
+            return const IconThemeData(
+              color: Color(0xFF132219),
+              size: 24,
+            );
           }
-          return IconThemeData(color: Colors.white.withAlpha(170), size: 22);
+          return IconThemeData(
+            color: Colors.white.withAlpha(210),
+            size: 24,
+          );
         }),
       ),
       navigationRailTheme: NavigationRailThemeData(
@@ -230,6 +243,7 @@ abstract final class AppTheme {
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
+      extensions: [isDark ? GlassTheme.dark : GlassTheme.light],
     );
   }
 }

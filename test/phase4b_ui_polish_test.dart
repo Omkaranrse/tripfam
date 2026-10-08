@@ -17,6 +17,7 @@ import 'package:tripfam/features/trips/data/join_request_repository.dart';
 import 'package:tripfam/features/trips/data/trip_repository.dart';
 import 'package:tripfam/features/trips/domain/join_request.dart';
 import 'package:tripfam/features/trips/domain/trip.dart';
+import 'package:tripfam/features/trips/domain/trip_filter.dart';
 import 'package:tripfam/features/trips/presentation/my_trips_page.dart';
 import 'package:tripfam/features/trips/presentation/trip_detail_screen.dart';
 
@@ -59,6 +60,9 @@ final _testTrip = Trip(
 class _MockTripRepo extends Fake implements TripRepository {
   @override
   Future<Trip?> getTripById(String id) async => _testTrip;
+
+  @override
+  Future<List<Trip>> getDiscoverTrips({TripFilter? filter, int limit = 20, int offset = 0}) async => [_testTrip];
 
   @override
   Future<bool> hasRequestedToJoin(String tripId) async => false;

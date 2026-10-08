@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_tokens.dart';
 import 'app_button.dart';
 import 'destination_image.dart';
+import 'glass_container.dart';
 import 'info_chip.dart';
 
 class FeaturedTripCard extends StatefulWidget {
@@ -37,6 +38,7 @@ class FeaturedTripCard extends StatefulWidget {
 
 class _FeaturedTripCardState extends State<FeaturedTripCard> {
   bool _isPressed = false;
+  bool _isFavorited = false;
 
   @override
   Widget build(BuildContext context) {
@@ -97,6 +99,24 @@ class _FeaturedTripCardState extends State<FeaturedTripCard> {
                     ),
                   ),
 
+                  // Circular Glass Favorite Button on photo header
+                  Positioned(
+                    top: AppSpacing.s12,
+                    right: AppSpacing.s12,
+                    child: GlassIconButton(
+                      icon: _isFavorited
+                          ? Icons.favorite_rounded
+                          : Icons.favorite_border_rounded,
+                      iconColor: _isFavorited ? Colors.redAccent : Colors.white,
+                      tooltip: _isFavorited
+                          ? 'Remove from favorites'
+                          : 'Save to favorites',
+                      onPressed: () {
+                        setState(() => _isFavorited = !_isFavorited);
+                      },
+                    ),
+                  ),
+
                   // Overlay Content
                   Padding(
                     padding: const EdgeInsets.all(AppSpacing.s16),
@@ -105,14 +125,14 @@ class _FeaturedTripCardState extends State<FeaturedTripCard> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Uppercase destination badge
-                        Container(
+                        GlassContainer(
+                          borderRadius: AppRadius.borderPill,
+                          blur: 12.0,
+                          tintColor: Colors.white.withAlpha(40),
+                          borderColor: Colors.white.withAlpha(60),
                           padding: const EdgeInsets.symmetric(
                             horizontal: 8,
                             vertical: 3,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withAlpha(35),
-                            borderRadius: AppRadius.borderPill,
                           ),
                           child: Text(
                             widget.destination.toUpperCase(),
@@ -141,24 +161,24 @@ class _FeaturedTripCardState extends State<FeaturedTripCard> {
                         ),
                         const SizedBox(height: AppSpacing.s12),
 
-                        // Info Chips: duration, pace, members x/max
+                        // Info Chips: duration, pace, members x/max (Glass over photo)
                         Wrap(
                           spacing: AppSpacing.s8,
                           runSpacing: AppSpacing.s4,
                           crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
                             InfoChip(
-                              variant: InfoChipVariant.scrim,
+                              variant: InfoChipVariant.glass,
                               icon: Icons.wb_sunny_outlined,
                               label: widget.daysLabel,
                             ),
                             InfoChip(
-                              variant: InfoChipVariant.scrim,
+                              variant: InfoChipVariant.glass,
                               icon: Icons.directions_walk_rounded,
                               label: widget.paceLabel,
                             ),
                             InfoChip(
-                              variant: InfoChipVariant.scrim,
+                              variant: InfoChipVariant.glass,
                               icon: Icons.group_outlined,
                               label: widget.membersLabel,
                             ),

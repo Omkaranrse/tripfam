@@ -100,6 +100,8 @@ class Trip {
   }
 
   bool get hasConfirmedMembers => confirmedMembersCount > 1;
+  bool get isPast => endDate.isBefore(DateTime.now());
+  String get meetingPoint => '$destination Central Hub';
 }
 
 class TripDraft {

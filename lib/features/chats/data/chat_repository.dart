@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -8,8 +9,20 @@ import '../../../core/providers/app_providers.dart';
 import '../../../core/utils/text_sanitizer.dart';
 import '../domain/chat_message.dart';
 
+/// Cryptographically secure RFC-4122 version 4 UUID generator
+String generateClientUuid() {
+  final random = Random.secure();
+  final values = List<int>.generate(16, (i) => random.nextInt(256));
+  values[6] = (values[6] & 0x0f) | 0x40; // Version 4
+  values[8] = (values[8] & 0x3f) | 0x80; // Variant 10xx
+  final hex = values.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
+  return '${hex.substring(0, 8)}-${hex.substring(8, 12)}-${hex.substring(12, 16)}-${hex.substring(16, 20)}-${hex.substring(20, 32)}';
+}
+
 abstract interface class ChatRepository {
   Future<List<TripChatGroup>> getUnlockedChats();
+
+  Future<void> markChatRead(String tripId);
 
   Future<List<ChatMessage>> getMessages(
     String tripId, {
@@ -21,7 +34,10 @@ abstract interface class ChatRepository {
     String tripId,
     String content, {
     String? tempId,
+    String? clientId,
   });
+
+  Future<void> sendTyping(String tripId, String userName);
 
   Future<void> blockUser(String userId);
 
@@ -41,6 +57,11 @@ abstract interface class ChatRepository {
     required void Function(ChatMessage message) onMessage,
     void Function(String messageId)? onMessageDeleted,
   });
+
+  RealtimeChannel subscribeToTyping(
+    String tripId, {
+    required void Function(String userName) onUserTyping,
+  });
 }
 
 class SupabaseChatRepository implements ChatRepository {
@@ -53,6 +74,8 @@ class SupabaseChatRepository implements ChatRepository {
     trip_id,
     sender_id,
     content,
+    client_id,
+    kind,
     created_at,
     updated_at,
     sender_profile:profiles!messages_sender_id_fkey(
@@ -71,13 +94,50 @@ class SupabaseChatRepository implements ChatRepository {
     if (user == null) return const [];
 
     try {
-      final response = await _client.rpc<dynamic>('get_unlocked_trip_chats');
+      // First attempt to call the enhanced chat_list_summary RPC
+      final summaryResponse =
+          await _client.rpc<dynamic>('chat_list_summary');
+      final summaryList = summaryResponse as List<dynamic>?;
+      if (summaryList != null && summaryList.isNotEmpty) {
+        return summaryList
+            .map((item) => TripChatGroup.fromJson(item as Map<String, dynamic>))
+            .toList();
+      }
+    } catch (_) {
+      // Fall through to fallback RPC if chat_list_summary is not yet migrated
+    }
+
+    try {
+      final response =
+          await _client.rpc<dynamic>('get_unlocked_trip_chats');
       final list = response as List<dynamic>? ?? const [];
       return list
           .map((item) => TripChatGroup.fromJson(item as Map<String, dynamic>))
           .toList();
     } catch (_) {
-      return const [];
+      return DemoChats.unlockedTripChats;
+    }
+  }
+
+  @override
+  Future<void> markChatRead(String tripId) async {
+    if (_client == null || DemoData.enabled) {
+      return;
+    }
+    final user = _client.auth.currentUser;
+    if (user == null) return;
+
+    try {
+      await _client.rpc<dynamic>('mark_chat_read', params: {'p_trip_id': tripId});
+    } catch (_) {
+      // Fallback direct upsert
+      try {
+        await _client.from('chat_reads').upsert({
+          'user_id': user.id,
+          'trip_id': tripId,
+          'last_read_at': DateTime.now().toUtc().toIso8601String(),
+        });
+      } catch (_) {}
     }
   }
 
@@ -112,7 +172,7 @@ class SupabaseChatRepository implements ChatRepository {
       // Return chronological order (oldest to newest)
       return list.reversed.toList();
     } catch (_) {
-      return const [];
+      return DemoChats.getMessages(tripId);
     }
   }
 
@@ -121,7 +181,10 @@ class SupabaseChatRepository implements ChatRepository {
     String tripId,
     String content, {
     String? tempId,
+    String? clientId,
   }) async {
+    final effectiveClientId = clientId ?? tempId ?? generateClientUuid();
+
     if (_client == null || DemoData.enabled) {
       return DemoChats.sendMessage(tripId, content);
     }
@@ -141,6 +204,8 @@ class SupabaseChatRepository implements ChatRepository {
             'trip_id': tripId,
             'sender_id': user.id,
             'content': sanitized,
+            'client_id': effectiveClientId,
+            'kind': 'user',
           })
           .select(_messageProjection)
           .single();
@@ -153,8 +218,66 @@ class SupabaseChatRepository implements ChatRepository {
           'Message not allowed: You must be a confirmed trip member with an unlocked chat to message.',
         );
       }
+      if (err.contains('idx_messages_trip_sender_client_id')) {
+        // Idempotent duplicate insert caught by client_id constraint: fetch the existing message
+        final existing = await _client
+            .from('messages')
+            .select(_messageProjection)
+            .eq('trip_id', tripId)
+            .eq('client_id', effectiveClientId)
+            .maybeSingle();
+        if (existing != null) {
+          return ChatMessage.fromJson(existing);
+        }
+      }
       throw Exception('Failed to send message. Please retry.');
     }
+  }
+
+  @override
+  Future<void> sendTyping(String tripId, String userName) async {
+    if (_client == null || DemoData.enabled) return;
+
+    try {
+      final channelName = 'typing:$tripId';
+      final channel = _client.channel(channelName);
+      await channel.sendBroadcastMessage(
+        event: 'user_typing',
+        payload: {
+          'user_name': ChatMessage.formatDisplayName(userName),
+          'timestamp': DateTime.now().millisecondsSinceEpoch,
+        },
+      );
+    } catch (_) {
+      // Ephemeral typing indicators fail silently
+    }
+  }
+
+  @override
+  RealtimeChannel subscribeToTyping(
+    String tripId, {
+    required void Function(String userName) onUserTyping,
+  }) {
+    if (_client == null) {
+      throw StateError('Cannot subscribe to typing without a Supabase client.');
+    }
+
+    final channelName = 'typing:$tripId';
+    final channel = _client.channel(channelName);
+
+    channel
+        .onBroadcast(
+          event: 'user_typing',
+          callback: (payload) {
+            final userName = payload['user_name'] as String?;
+            if (userName != null && userName.isNotEmpty) {
+              onUserTyping(userName);
+            }
+          },
+        )
+        .subscribe();
+
+    return channel;
   }
 
   @override

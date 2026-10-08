@@ -77,7 +77,19 @@ class _TripFilterSheetState extends ConsumerState<TripFilterSheet> {
       minChildSize: 0.5,
       expand: false,
       builder: (context, scrollController) {
-        return Container(
+        final isDark = theme.brightness == Brightness.dark;
+        return GlassContainer(
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(24),
+          ),
+          blur: 24.0,
+          tintColor: isDark
+              ? const Color(0xEB121E17)
+              : const Color(0xF2F6F9F5),
+          borderColor: isDark
+              ? const Color(0x337FA88B)
+              : const Color(0x66FFFFFF),
+          showTopHighlight: true,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           child: ListView(
             controller: scrollController,

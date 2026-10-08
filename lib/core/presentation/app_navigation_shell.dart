@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../layout/breakpoints.dart';
 import '../theme/app_theme.dart';
+import '../widgets/glass_container.dart';
 
 class AppNavigationShell extends StatelessWidget {
   const AppNavigationShell({required this.navigationShell, super.key});
@@ -45,46 +47,11 @@ class AppNavigationShell extends StatelessWidget {
         )
         .toList();
 
+    final location = GoRouterState.of(context).matchedLocation;
+    final isInsideChatRoom =
+        location.startsWith('/chats/') && location != '/chats';
+
     return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 56,
-        title: Row(
-          children: [
-            // App icon using asset
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
-              clipBehavior: Clip.antiAlias,
-              child: Image.asset(
-                'assets/images/AppIcon.png',
-                fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withAlpha(30),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    Icons.travel_explore_rounded,
-                    size: 20,
-                    color: theme.colorScheme.primary,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Text(
-              'TripMate',
-              style: AppTypography.cardTitle.copyWith(
-                fontWeight: FontWeight.bold,
-                letterSpacing: -0.5,
-                color: theme.colorScheme.onSurface,
-              ),
-            ),
-          ],
-        ),
-      ),
       body: Row(
         children: [
           if (!isCompact)
@@ -100,44 +67,6 @@ class AppNavigationShell extends StatelessWidget {
                       labelType: isShort
                           ? NavigationRailLabelType.none
                           : (isExpanded ? null : NavigationRailLabelType.all),
-                      leading: isExpanded && !isShort
-                          ? Padding(
-                              padding: const EdgeInsets.only(
-                                top: 8,
-                                bottom: 20,
-                              ),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 28,
-                                    height: 28,
-                                    clipBehavior: Clip.antiAlias,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(6),
-                                    ),
-                                    child: Image.asset(
-                                      'assets/images/AppIcon.png',
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (_, _, _) => Icon(
-                                        Icons.explore_rounded,
-                                        color: theme.colorScheme.primary,
-                                        size: 26,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Text(
-                                    'TripMate',
-                                    style: theme.textTheme.titleMedium
-                                        ?.copyWith(
-                                          fontWeight: FontWeight.bold,
-                                          color: theme.colorScheme.primary,
-                                        ),
-                                  ),
-                                ],
-                              ),
-                            )
-                          : null,
                       destinations: railDestinations,
                     ),
                   ),
@@ -152,7 +81,7 @@ class AppNavigationShell extends StatelessWidget {
             ),
           Expanded(
             child: SafeArea(
-              top: false,
+              top: isCompact,
               bottom: isCompact ? false : true,
               child: Align(
                 alignment: Alignment.topCenter,
@@ -173,33 +102,58 @@ class AppNavigationShell extends StatelessWidget {
           ),
         ],
       ),
-      bottomNavigationBar: isCompact
+      bottomNavigationBar: (isCompact && !isInsideChatRoom)
           ? SafeArea(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? AppTheme.darkForestSurfaceDark
-                        : AppTheme.darkForestSurfaceLight,
-                    borderRadius: AppRadius.borderPill,
-                    border: Border.all(
-                      color: Colors.white.withAlpha(25),
-                      width: 1,
+                child: GlassContainer(
+                  borderRadius: AppRadius.borderPill,
+                  blur: 20.0,
+                  tintColor: isDark
+                      ? const Color(0xF2101C15)
+                      : const Color(0xF5132219),
+                  borderColor: Colors.white.withAlpha(isDark ? 30 : 40),
+                  borderWidth: 1.0,
+                  showTopHighlight: true,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withAlpha(isDark ? 100 : 65),
+                      blurRadius: 24,
+                      offset: const Offset(0, 8),
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withAlpha(isDark ? 80 : 45),
-                        blurRadius: 20,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: AppRadius.borderPill,
+                  ],
+                  child: NavigationBarTheme(
+                    data: NavigationBarThemeData(
+                      backgroundColor: Colors.transparent,
+                      surfaceTintColor: Colors.transparent,
+                      elevation: 0,
+                      height: 60,
+                      indicatorColor: const Color(0xFFC6E062),
+                      indicatorShape: const StadiumBorder(),
+                      labelBehavior:
+                          NavigationDestinationLabelBehavior.alwaysHide,
+                      iconTheme: WidgetStateProperty.resolveWith((states) {
+                        if (states.contains(WidgetState.selected)) {
+                          return const IconThemeData(
+                            color: Color(0xFF132219),
+                            size: 24,
+                          );
+                        }
+                        return IconThemeData(
+                          color: Colors.white.withAlpha(210),
+                          size: 24,
+                        );
+                      }),
+                    ),
                     child: NavigationBar(
+                      backgroundColor: Colors.transparent,
+                      surfaceTintColor: Colors.transparent,
+                      elevation: 0,
                       selectedIndex: navigationShell.currentIndex,
-                      onDestinationSelected: navigationShell.goBranch,
+                      onDestinationSelected: (index) {
+                        HapticFeedback.selectionClick();
+                        navigationShell.goBranch(index);
+                      },
                       labelBehavior:
                           NavigationDestinationLabelBehavior.alwaysHide,
                       height: 60,

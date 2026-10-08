@@ -14,6 +14,7 @@ import '../../features/account/presentation/verify_otp_screen.dart';
 import '../../features/chats/presentation/chat_conversation_screen.dart';
 import '../../features/chats/presentation/chats_page.dart';
 import '../../features/discover/presentation/discover_page.dart';
+import '../../features/discover/presentation/saved_trips_screen.dart';
 import '../../features/safety/presentation/safety_guide_screen.dart';
 import '../../features/safety/presentation/safety_page.dart';
 import '../../features/trips/presentation/my_trips_page.dart';
@@ -77,6 +78,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => SharedAxisPage(
           key: state.pageKey,
           child: const EditProfileScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/saved-trips',
+        pageBuilder: (context, state) => SharedAxisPage(
+          key: state.pageKey,
+          child: const SavedTripsScreen(),
         ),
       ),
       GoRoute(

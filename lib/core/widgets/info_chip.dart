@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_tokens.dart';
+import 'glass_container.dart';
 
 enum InfoChipVariant {
   scrim, // Translucent dark for photo overlay (contrast >= 4.5:1)
   surface, // Theme-aware surface container
   outline, // Thin outline
+  glass, // Frosted glassmorphism for photo overlay
 }
 
 class InfoChip extends StatelessWidget {
@@ -29,12 +31,53 @@ class InfoChip extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
+    if (variant == InfoChipVariant.glass) {
+      final resolvedText = textColor ?? (isDark ? Colors.white : Colors.white);
+      final resolvedIcon = iconColor ?? const Color(0xFFC6E062);
+
+      return GlassContainer(
+        borderRadius: AppRadius.borderPill,
+        blur: 14.0,
+        tintColor: Colors.black.withAlpha(isDark ? 90 : 70),
+        borderColor: Colors.white.withAlpha(50),
+        highlightColor: Colors.white.withAlpha(60),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        showTopHighlight: true,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(icon, size: 13, color: resolvedIcon),
+              const SizedBox(width: 4),
+            ],
+            Flexible(
+              child: Text(
+                label,
+                style: AppTypography.caption.copyWith(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 11,
+                  color: resolvedText,
+                ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     Color bg;
     Border? border;
     Color resolvedText;
     Color resolvedIcon;
 
     switch (variant) {
+      case InfoChipVariant.glass:
+        // Handled above
+        bg = Colors.transparent;
+        resolvedText = Colors.white;
+        resolvedIcon = const Color(0xFFC6E062);
       case InfoChipVariant.scrim:
         bg = Colors.black.withAlpha(100);
         border = Border.all(color: Colors.white.withAlpha(40));

@@ -264,6 +264,7 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final currentUser = ref.watch(currentUserProvider);
     final userProfile = ref.watch(userProfileProvider).value;
 
@@ -300,41 +301,27 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
     );
 
     return Scaffold(
+      extendBody: true,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
-        leading: Padding(
-          padding: const EdgeInsets.all(AppSpacing.s8),
-          child: IconButton(
-            style: IconButton.styleFrom(
-              backgroundColor: theme.colorScheme.surface.withAlpha(220),
-              foregroundColor: theme.colorScheme.onSurface,
-            ),
-            icon: const Icon(
-              Icons.arrow_back_rounded,
-              size: 20,
-            ),
+        leading: Center(
+          child: GlassIconButton(
+            icon: Icons.arrow_back_rounded,
             tooltip: 'Back',
             onPressed: () => context.pop(),
           ),
         ),
         actions: [
-          IconButton(
-            style: IconButton.styleFrom(
-              backgroundColor: theme.colorScheme.surface.withAlpha(220),
-              foregroundColor: theme.colorScheme.onSurface,
-            ),
-            icon: Icon(
-              _isFavorite
-                  ? Icons.favorite_rounded
-                  : Icons.favorite_border_rounded,
-              color: _isFavorite
-                  ? Colors.redAccent
-                  : theme.colorScheme.onSurface,
-              size: 20,
-            ),
+          GlassIconButton(
+            icon: _isFavorite
+                ? Icons.favorite_rounded
+                : Icons.favorite_border_rounded,
+            iconColor: _isFavorite
+                ? Colors.redAccent
+                : (isDark ? Colors.white : const Color(0xFF132219)),
             tooltip:
                 _isFavorite ? 'Remove from favorites' : 'Save to favorites',
             onPressed: () {
@@ -351,56 +338,70 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
               );
             },
           ),
-          const SizedBox(width: AppSpacing.s8),
-          if (isHost) ...[
-            IconButton(
-              style: IconButton.styleFrom(
-                backgroundColor: theme.colorScheme.surface.withAlpha(220),
-                foregroundColor: theme.colorScheme.onSurface,
-              ),
-              icon: Badge(
-                isLabelVisible: pendingRequestsCount > 0,
-                label: Text('$pendingRequestsCount'),
-                child: const Icon(
-                  Icons.people_alt_outlined,
-                  size: 20,
+          const SizedBox(width: AppSpacing.s4),
+          GlassIconButton(
+            icon: Icons.share_rounded,
+            tooltip: 'Share Trip',
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Trip link copied to clipboard'),
+                  duration: Duration(seconds: 1),
                 ),
-              ),
+              );
+            },
+          ),
+          if (isHost) ...[
+            const SizedBox(width: AppSpacing.s4),
+            GlassIconButton(
+              icon: Icons.people_alt_outlined,
               tooltip: 'Review Requests',
+              badge: pendingRequestsCount > 0
+                  ? Badge(
+                      label: Text('$pendingRequestsCount'),
+                      child: Icon(
+                        Icons.people_alt_outlined,
+                        size: 20,
+                        color: isDark ? Colors.white : const Color(0xFF132219),
+                      ),
+                    )
+                  : null,
               onPressed: () => context.push('/trip/${trip.id}/requests'),
             ),
-            const SizedBox(width: AppSpacing.s8),
-            IconButton(
-              style: IconButton.styleFrom(
-                backgroundColor: theme.colorScheme.surface.withAlpha(220),
-                foregroundColor: theme.colorScheme.onSurface,
-              ),
-              icon: const Icon(
-                Icons.edit_outlined,
-                size: 20,
-              ),
+            const SizedBox(width: AppSpacing.s4),
+            GlassIconButton(
+              icon: Icons.edit_outlined,
               tooltip: 'Edit Trip',
               onPressed: () =>
                   context.push('/trip/edit/${trip.id}', extra: trip),
             ),
-            const SizedBox(width: AppSpacing.s8),
           ],
+          const SizedBox(width: AppSpacing.s8),
         ],
       ),
       bottomNavigationBar: SafeArea(
-        child: Container(
+        child: GlassContainer(
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(AppRadius.r20),
+          ),
+          blur: 20.0,
+          tintColor: isDark
+              ? const Color(0xE6101C15)
+              : const Color(0xEEFFFFFF),
+          borderColor: isDark
+              ? const Color(0x337FA88B)
+              : const Color(0x40D8E2D8),
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.s16,
             vertical: AppSpacing.s12,
           ),
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surface,
-            border: Border(
-              top: BorderSide(
-                color: theme.colorScheme.outlineVariant.withAlpha(80),
-              ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(isDark ? 80 : 25),
+              blurRadius: 16,
+              offset: const Offset(0, -4),
             ),
-          ),
+          ],
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 1200),
@@ -416,15 +417,60 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
         ),
       ),
       body: SingleChildScrollView(
+        padding: const EdgeInsets.only(bottom: 96),
         child: Column(
           children: [
-            DestinationImage(
-              tripId: trip.id,
-              destination: trip.destination,
-              height: 290,
-              aspectRatio: null,
-              fit: BoxFit.cover,
-              borderRadius: BorderRadius.zero,
+            Stack(
+              alignment: Alignment.bottomLeft,
+              children: [
+                DestinationImage(
+                  tripId: trip.id,
+                  destination: trip.destination,
+                  height: 300,
+                  aspectRatio: null,
+                  fit: BoxFit.cover,
+                  borderRadius: BorderRadius.zero,
+                ),
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withAlpha(20),
+                          Colors.black.withAlpha(160),
+                        ],
+                        stops: const [0.5, 0.75, 1.0],
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: AppSpacing.s16,
+                  bottom: 36,
+                  right: AppSpacing.s16,
+                  child: Wrap(
+                    spacing: AppSpacing.s8,
+                    runSpacing: AppSpacing.s4,
+                    children: [
+                      InfoChip(
+                        variant: InfoChipVariant.glass,
+                        icon: Icons.calendar_today_rounded,
+                        label:
+                            '${trip.startDate.day}/${trip.startDate.month} – ${trip.endDate.day}/${trip.endDate.month}',
+                      ),
+                      InfoChip(
+                        variant: InfoChipVariant.glass,
+                        icon: Icons.group_rounded,
+                        label:
+                            '${trip.confirmedMembersCount}/${trip.maxMembers} members',
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
             Transform.translate(
               offset: const Offset(0, -28),

@@ -7,6 +7,7 @@ export 'destination_image.dart';
 export 'empty_state.dart';
 export 'error_view.dart';
 export 'featured_trip_card.dart';
+export 'glass_container.dart';
 export 'illustrated_empty_state.dart';
 export 'info_chip.dart';
 export 'loading_view.dart';
