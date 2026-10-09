@@ -16,28 +16,15 @@ abstract final class AppTheme {
   static const _lightText = Color(0xFF132219);
   static const _lightBorder = Color(0xFFD8E2D8);
 
-  // Soft Sage-Green Travel UI Dark Palette (Forest Obsidian)
-  static const _darkBackground = Color(0xFF0F1813);
-  static const _darkSurface = Color(0xFF16241C);
-  static const _darkPrimary = Color(0xFF7FA88B); // Luminous soft sage
-  static const _darkSecondary = Color(0xFF98C1A5);
-  static const _darkTertiary = Color(0xFFC6E062); // Lime accent
-  static const _darkText = Color(0xFFF1F6F2);
-  static const _darkBorder = Color(0xFF233529);
-
   static const darkForestSurfaceLight = Color(0xFF15261D);
-  static const darkForestSurfaceDark = Color(0xFF101C15);
 
   static Color darkForest(BuildContext context) {
-    return Theme.of(context).brightness == Brightness.dark
-        ? darkForestSurfaceDark
-        : darkForestSurfaceLight;
+    return darkForestSurfaceLight;
   }
 
   static const Color lime = Color(0xFFC6E062);
 
   static ThemeData get light => _buildTheme(
-    brightness: Brightness.light,
     background: _lightBackground,
     surface: _lightSurface,
     primary: _lightPrimary,
@@ -47,19 +34,7 @@ abstract final class AppTheme {
     border: _lightBorder,
   );
 
-  static ThemeData get dark => _buildTheme(
-    brightness: Brightness.dark,
-    background: _darkBackground,
-    surface: _darkSurface,
-    primary: _darkPrimary,
-    secondary: _darkSecondary,
-    tertiary: _darkTertiary,
-    text: _darkText,
-    border: _darkBorder,
-  );
-
   static ThemeData _buildTheme({
-    required Brightness brightness,
     required Color background,
     required Color surface,
     required Color primary,
@@ -68,28 +43,25 @@ abstract final class AppTheme {
     required Color text,
     required Color border,
   }) {
-    final isDark = brightness == Brightness.dark;
-    final scheme = ColorScheme(
-      brightness: brightness,
-      primary: primary,
-      onPrimary: isDark ? const Color(0xFF071E12) : Colors.white,
-      secondary: secondary,
-      onSecondary: isDark ? const Color(0xFF0B2115) : Colors.white,
-      tertiary: tertiary,
-      onTertiary: const Color(0xFF152B05),
-      error: isDark ? const Color(0xFFFFB4AB) : const Color(0xFFBA1A1A),
-      onError: isDark ? const Color(0xFF690005) : Colors.white,
-      surface: surface,
-      onSurface: text,
-      inverseSurface: isDark ? const Color(0xFFF1F6F2) : darkForestSurfaceLight,
-      onInverseSurface: isDark ? darkForestSurfaceLight : const Color(0xFFF1F6F2),
-      outline: border,
-      outlineVariant: border,
-      primaryContainer: isDark ? const Color(0xFF1E3526) : const Color(0xFFD8EADB),
-      onPrimaryContainer: isDark ? const Color(0xFFC7E2CE) : const Color(0xFF103622),
-      surfaceContainerHighest: isDark
-          ? const Color(0xFF223428)
-          : const Color(0xFFE5EDE4),
+    const scheme = ColorScheme(
+      brightness: Brightness.light,
+      primary: _lightPrimary,
+      onPrimary: Colors.white,
+      secondary: _lightSecondary,
+      onSecondary: Colors.white,
+      tertiary: _lightTertiary,
+      onTertiary: Color(0xFF152B05),
+      error: Color(0xFFBA1A1A),
+      onError: Colors.white,
+      surface: _lightSurface,
+      onSurface: _lightText,
+      inverseSurface: darkForestSurfaceLight,
+      onInverseSurface: Color(0xFFF1F6F2),
+      outline: _lightBorder,
+      outlineVariant: _lightBorder,
+      primaryContainer: Color(0xFFD8EADB),
+      onPrimaryContainer: Color(0xFF103622),
+      surfaceContainerHighest: Color(0xFFE5EDE4),
     );
 
     // Poppins type scale:
@@ -103,23 +75,23 @@ abstract final class AppTheme {
       bodyLarge: AppTypography.body.copyWith(color: text),
       bodyMedium: AppTypography.body.copyWith(color: text),
       bodySmall: AppTypography.caption.copyWith(
-        color: text.withAlpha(isDark ? 180 : 160),
+        color: text.withAlpha(160),
       ),
       labelLarge: AppTypography.cardTitle.copyWith(
         color: text,
         fontWeight: FontWeight.w600,
       ),
       labelMedium: AppTypography.body.copyWith(
-        color: text.withAlpha(isDark ? 200 : 180),
+        color: text.withAlpha(180),
       ),
       labelSmall: AppTypography.caption.copyWith(
-        color: text.withAlpha(isDark ? 180 : 160),
+        color: text.withAlpha(160),
       ),
     );
 
     return ThemeData(
       useMaterial3: true,
-      brightness: brightness,
+      brightness: Brightness.light,
       colorScheme: scheme,
       scaffoldBackgroundColor: background,
       textTheme: textTheme,
@@ -177,7 +149,7 @@ abstract final class AppTheme {
       ),
       navigationRailTheme: NavigationRailThemeData(
         backgroundColor: surface,
-        indicatorColor: scheme.primary.withAlpha(isDark ? 50 : 30),
+        indicatorColor: scheme.primary.withAlpha(30),
         selectedIconTheme: IconThemeData(color: scheme.primary),
         unselectedIconTheme: IconThemeData(color: text.withAlpha(160)),
         selectedLabelTextStyle: textTheme.labelMedium?.copyWith(
@@ -213,7 +185,7 @@ abstract final class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: isDark ? const Color(0xFF16202C) : const Color(0xFFFFFFFF),
+        fillColor: const Color(0xFFFFFFFF),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 14,
@@ -243,7 +215,7 @@ abstract final class AppTheme {
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
-      extensions: [isDark ? GlassTheme.dark : GlassTheme.light],
+      extensions: const [GlassTheme.light],
     );
   }
 }
@@ -280,18 +252,7 @@ class AppSemanticColors {
     onInfo: Colors.white,
   );
 
-  static const dark = AppSemanticColors(
-    success: Color(0xFF81C784), // Harmonized luminous sage green (contrast 8.7:1)
-    onSuccess: Color(0xFF0C2413),
-    warning: Color(0xFFFFB74D), // Harmonized luminous amber (contrast 10.4:1)
-    onWarning: Color(0xFF331D00),
-    error: Color(0xFFFFB4AB),
-    onError: Color(0xFF690005),
-    info: Color(0xFF80D4EA),
-    onInfo: Color(0xFF003644),
-  );
-
   static AppSemanticColors of(BuildContext context) {
-    return Theme.of(context).brightness == Brightness.dark ? dark : light;
+    return light;
   }
 }

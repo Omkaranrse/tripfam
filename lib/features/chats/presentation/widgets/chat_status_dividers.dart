@@ -164,7 +164,6 @@ class _ChatTypingIndicatorState extends State<ChatTypingIndicator>
     if (widget.typingUsers.isEmpty) return const SizedBox.shrink();
 
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final disableAnimations = MediaQuery.disableAnimationsOf(context);
 
     final String text;
@@ -184,19 +183,20 @@ class _ChatTypingIndicatorState extends State<ChatTypingIndicator>
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
           decoration: BoxDecoration(
-            color: isDark
-                ? const Color(0xFF1E2D23)
-                : const Color(0xFFE8F1EC),
+            color: const Color(0xFFE8F1EC),
             borderRadius: BorderRadius.circular(14),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                text,
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: theme.colorScheme.primary,
-                  fontWeight: FontWeight.w600,
+              Flexible(
+                child: Text(
+                  text,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               const SizedBox(width: 6),

@@ -39,11 +39,10 @@ class _TripCardState extends State<TripCard> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final disableAnimations = MediaQuery.disableAnimationsOf(context);
 
     final cardBg = widget.isForestStyle
-        ? (isDark ? const Color(0xFF14241B) : const Color(0xFF1B3124))
+        ? const Color(0xFF1B3124)
         : theme.colorScheme.surface;
 
     final onCardText = widget.isForestStyle

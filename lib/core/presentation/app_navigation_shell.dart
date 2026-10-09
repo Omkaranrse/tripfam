@@ -25,7 +25,6 @@ class AppNavigationShell extends StatelessWidget {
     final isCompact = context.isCompact;
     final isExpanded = context.isExpanded;
     final isShort = context.isShort;
-    final isDark = theme.brightness == Brightness.dark;
 
     final List<Widget> bottomDestinations = _destinations
         .map<Widget>(
@@ -109,15 +108,13 @@ class AppNavigationShell extends StatelessWidget {
                 child: GlassContainer(
                   borderRadius: AppRadius.borderPill,
                   blur: 20.0,
-                  tintColor: isDark
-                      ? const Color(0xF2101C15)
-                      : const Color(0xF5132219),
-                  borderColor: Colors.white.withAlpha(isDark ? 30 : 40),
+                  tintColor: const Color(0xF5132219),
+                  borderColor: Colors.white.withAlpha(40),
                   borderWidth: 1.0,
                   showTopHighlight: true,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withAlpha(isDark ? 100 : 65),
+                      color: Colors.black.withAlpha(65),
                       blurRadius: 24,
                       offset: const Offset(0, 8),
                     ),

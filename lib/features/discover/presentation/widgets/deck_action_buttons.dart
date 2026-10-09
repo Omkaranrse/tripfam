@@ -18,7 +18,6 @@ class DeckActionButtons extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     // Resolve which button is Save and which is Skip based on kSaveDirection
     final isLeftSave = SwipeDirection.left.isSave;
@@ -30,7 +29,7 @@ class DeckActionButtons extends StatelessWidget {
     final leftTooltip = isLeftSave ? 'Save trip' : 'Skip trip';
     final leftColor = isLeftSave
         ? const Color(0xFFC6E062) // Lime accent
-        : (isDark ? const Color(0xFFFF8A65) : const Color(0xFFE64A19));
+        : const Color(0xFFE64A19);
 
     final rightIcon = !isLeftSave
         ? Icons.bookmark_rounded
@@ -38,7 +37,7 @@ class DeckActionButtons extends StatelessWidget {
     final rightTooltip = !isLeftSave ? 'Save trip' : 'Skip trip';
     final rightColor = !isLeftSave
         ? const Color(0xFFC6E062)
-        : (isDark ? const Color(0xFFFF8A65) : const Color(0xFFE64A19));
+        : const Color(0xFFE64A19);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -55,10 +54,10 @@ class DeckActionButtons extends StatelessWidget {
                 child: Tooltip(
                   message: leftTooltip,
                   child: Material(
-                    color: isDark ? const Color(0xFF1B2B20) : Colors.white,
+                    color: Colors.white,
                     shape: const CircleBorder(),
                     elevation: 1.5,
-                    shadowColor: Colors.black.withAlpha(isDark ? 80 : 25),
+                    shadowColor: Colors.black.withAlpha(25),
                     child: InkWell(
                       customBorder: const CircleBorder(),
                       onTap: leftAction,
@@ -125,10 +124,10 @@ class DeckActionButtons extends StatelessWidget {
                 child: Tooltip(
                   message: rightTooltip,
                   child: Material(
-                    color: isDark ? const Color(0xFF1B2B20) : Colors.white,
+                    color: Colors.white,
                     shape: const CircleBorder(),
                     elevation: 1.5,
-                    shadowColor: Colors.black.withAlpha(isDark ? 80 : 25),
+                    shadowColor: Colors.black.withAlpha(25),
                     child: InkWell(
                       customBorder: const CircleBorder(),
                       onTap: rightAction,

@@ -19,7 +19,6 @@ class UpcomingTripsStrip extends StatelessWidget {
     if (trips.isEmpty) return const SizedBox.shrink();
 
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     // Display at most 4 upcoming trips within the safe zone
     final stripTrips = trips.take(4).toList();
@@ -48,7 +47,6 @@ class UpcomingTripsStrip extends StatelessWidget {
                     context: context,
                     trip: trip,
                     index: index,
-                    isDark: isDark,
                     theme: theme,
                   );
 
@@ -86,7 +84,6 @@ class UpcomingTripsStrip extends StatelessWidget {
     required BuildContext context,
     required Trip trip,
     required int index,
-    required bool isDark,
     required ThemeData theme,
   }) {
     // Clean, punchy destination label (e.g., "Alibaug", "North Goa", "Rajmachi")
@@ -102,9 +99,7 @@ class UpcomingTripsStrip extends StatelessWidget {
             borderRadius: BorderRadius.circular(14),
             boxShadow: AppShadows.subtle(context),
             border: Border.all(
-              color: isDark
-                  ? Colors.white.withAlpha(35)
-                  : theme.colorScheme.outline.withAlpha(65),
+              color: theme.colorScheme.outline.withAlpha(65),
               width: 1.5,
             ),
           ),

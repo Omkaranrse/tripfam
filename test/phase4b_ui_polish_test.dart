@@ -133,18 +133,13 @@ void main() {
       expect(AppTypography.caption.fontFamily, 'Poppins');
     });
 
-    test('AppTheme incorporates tokens in both light and dark modes', () {
+    test('AppTheme incorporates tokens in light mode', () {
       final light = AppTheme.light;
-      final dark = AppTheme.dark;
 
       expect(light.textTheme.headlineMedium?.fontSize, 28);
-      expect(dark.textTheme.headlineMedium?.fontSize, 28);
       expect(light.textTheme.titleMedium?.fontSize, 16);
-      expect(dark.textTheme.titleMedium?.fontSize, 16);
       expect(light.textTheme.bodyMedium?.fontSize, 14);
-      expect(dark.textTheme.bodyMedium?.fontSize, 14);
       expect(light.textTheme.bodySmall?.fontSize, 12);
-      expect(dark.textTheme.bodySmall?.fontSize, 12);
 
       expect(light.cardTheme.shape, isA<RoundedRectangleBorder>());
       final lightBorder = light.cardTheme.shape as RoundedRectangleBorder;
@@ -163,7 +158,6 @@ void main() {
     Widget buildTestScreen(
       Widget screen, {
       double textScale = 1.0,
-      bool isDark = false,
     }) {
       return ProviderScope(
         overrides: [
@@ -187,7 +181,7 @@ void main() {
           blockedUsersListProvider.overrideWith((ref) async => []),
         ],
         child: MaterialApp(
-          theme: isDark ? AppTheme.dark : AppTheme.light,
+          theme: AppTheme.light,
           home: Builder(
             builder: (context) => MediaQuery(
               data: MediaQuery.of(context).copyWith(
@@ -328,64 +322,8 @@ void main() {
         );
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
-
-        // Also verify all 3 in dark mode at 1.5x text scale
-        await tester.pumpWidget(
-          buildTestScreen(const DiscoverPage(), textScale: 1.5, isDark: true),
-        );
-        await tester.pumpAndSettle();
-        expect(tester.takeException(), isNull);
-
-        await tester.pumpWidget(
-          buildTestScreen(
-            const TripDetailScreen(tripId: 'trip-101'),
-            textScale: 1.5,
-            isDark: true,
-          ),
-        );
-        await tester.pumpAndSettle();
-        expect(tester.takeException(), isNull);
-
-        await tester.pumpWidget(
-          buildTestScreen(const ProfilePage(), textScale: 1.5, isDark: true),
-        );
-        await tester.pumpAndSettle();
-        expect(tester.takeException(), isNull);
       },
     );
-
-    for (final width in testWidths) {
-      testWidgets(
-        'Screens render in dark mode at ${width.toInt()}px without overflow',
-        (tester) async {
-          tester.view.physicalSize = Size(width, 900);
-          tester.view.devicePixelRatio = 1.0;
-          addTearDown(tester.view.resetPhysicalSize);
-          addTearDown(tester.view.resetDevicePixelRatio);
-
-          await tester.pumpWidget(
-            buildTestScreen(const DiscoverPage(), isDark: true),
-          );
-          await tester.pumpAndSettle();
-          expect(tester.takeException(), isNull);
-
-          await tester.pumpWidget(
-            buildTestScreen(
-              const TripDetailScreen(tripId: 'trip-101'),
-              isDark: true,
-            ),
-          );
-          await tester.pumpAndSettle();
-          expect(tester.takeException(), isNull);
-
-          await tester.pumpWidget(
-            buildTestScreen(const ProfilePage(), isDark: true),
-          );
-          await tester.pumpAndSettle();
-          expect(tester.takeException(), isNull);
-        },
-      );
-    }
 
     testWidgets(
       'Motion and entrance animations respect MediaQuery.disableAnimations',

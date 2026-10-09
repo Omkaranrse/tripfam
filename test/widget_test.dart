@@ -5,7 +5,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tripfam/core/config/app_config.dart';
 import 'package:tripfam/core/providers/app_providers.dart';
 import 'package:tripfam/core/theme/app.dart';
-import 'package:tripfam/core/theme/theme_mode_controller.dart';
 import 'package:tripfam/features/account/data/profile_repository.dart';
 import 'package:tripfam/features/account/domain/user_profile.dart';
 
@@ -36,7 +35,6 @@ void main() {
       ),
       supabaseReadyProvider.overrideWithValue(false),
       sharedPreferencesProvider.overrideWithValue(preferences),
-      initialThemeModeProvider.overrideWithValue(ThemeMode.system),
       userProfileProvider.overrideWith(FakeUserProfileNotifier.new),
     ],
     child: const TripMateApp(),
@@ -111,7 +109,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('theme switch to dark works and persists in SharedPreferences', (
+  testWidgets('app uses light theme exclusively on profile page', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(800, 900);
@@ -125,16 +123,9 @@ void main() {
     await tester.tap(find.text('Profile'));
     await tester.pumpAndSettle();
 
-    await tester.drag(find.byType(ListView), const Offset(0, -400));
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.text('Dark'));
-    await tester.pumpAndSettle();
-
-    expect(preferences.getString('theme_mode'), 'dark');
     expect(
-      Theme.of(tester.element(find.text('Dark'))).brightness,
-      Brightness.dark,
+      Theme.of(tester.element(find.text('Profile'))).brightness,
+      Brightness.light,
     );
   });
 }

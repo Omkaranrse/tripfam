@@ -88,7 +88,6 @@ class _ChatComposerState extends State<ChatComposer> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final disableAnimations = MediaQuery.disableAnimationsOf(context);
 
     if (widget.isReadOnly) {
@@ -112,11 +111,14 @@ class _ChatComposerState extends State<ChatComposer> {
                   color: theme.colorScheme.onSurface.withAlpha(140),
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  'This past trip chat is now in read-only mode',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withAlpha(160),
-                    fontStyle: FontStyle.italic,
+                Flexible(
+                  child: Text(
+                    'This past trip chat is now in read-only mode',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurface.withAlpha(160),
+                      fontStyle: FontStyle.italic,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
                 ),
               ],
@@ -127,12 +129,8 @@ class _ChatComposerState extends State<ChatComposer> {
     }
 
     // Solid surface (no glass on composer)
-    final composerBg = isDark
-        ? const Color(0xFF1B281F) // Deep solid sage dark
-        : const Color(0xFFFFFFFF); // Solid white light
-    final borderColor = isDark
-        ? theme.colorScheme.outline.withAlpha(50)
-        : theme.colorScheme.outline.withAlpha(40);
+    const composerBg = Color(0xFFFFFFFF); // Solid white light
+    final borderColor = theme.colorScheme.outline.withAlpha(40);
 
     return Container(
       decoration: BoxDecoration(

@@ -55,12 +55,9 @@ class _SkeletonBoxState extends State<SkeletonBox>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final disableAnimations = MediaQuery.disableAnimationsOf(context);
 
-    final baseColor = isDark
-        ? theme.colorScheme.surfaceContainerHighest
-        : theme.colorScheme.surfaceContainer;
+    final baseColor = theme.colorScheme.surfaceContainer;
 
     final br = widget._effectiveBorderRadius;
 

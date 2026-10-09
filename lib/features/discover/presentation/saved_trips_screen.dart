@@ -47,15 +47,14 @@ class _SavedTripsScreenState extends ConsumerState<SavedTripsScreen> {
   }
 
   Color _resolveStatusColor(BuildContext context, String status) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     switch (status) {
       case 'Open':
-        return isDark ? const Color(0xFF81C784) : const Color(0xFF286544);
+        return const Color(0xFF286544);
       case 'Full':
-        return isDark ? const Color(0xFFFFB74D) : const Color(0xFFE65100);
+        return const Color(0xFFE65100);
       case 'Past':
       default:
-        return isDark ? Colors.white54 : Colors.black45;
+        return Colors.black45;
     }
   }
 

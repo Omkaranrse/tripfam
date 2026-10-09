@@ -28,7 +28,6 @@ class _SafetyPageState extends ConsumerState<SafetyPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final myTripsAsync = ref.watch(myTripsProvider);
     final contactsAsync = ref.watch(trustedContactsProvider);
     final blockedAsync = ref.watch(blockedUsersListProvider);
@@ -84,14 +83,10 @@ class _SafetyPageState extends ConsumerState<SafetyPage> {
                     width: 36,
                     height: 36,
                     decoration: BoxDecoration(
-                      color: isDark
-                          ? Colors.white.withAlpha(16)
-                          : theme.colorScheme.surfaceContainerHighest.withAlpha(120),
+                      color: theme.colorScheme.surfaceContainerHighest.withAlpha(120),
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: isDark
-                            ? Colors.white.withAlpha(25)
-                            : theme.colorScheme.outlineVariant.withAlpha(80),
+                        color: theme.colorScheme.outlineVariant.withAlpha(80),
                       ),
                     ),
                     child: IconButton(
@@ -157,18 +152,13 @@ class _SafetyPageState extends ConsumerState<SafetyPage> {
     AsyncValue<List<Trip>> myTripsAsync,
   ) {
     final semantic = AppSemanticColors.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     return Container(
       decoration: BoxDecoration(
-        color: isDark
-            ? AppTheme.darkForestSurfaceDark
-            : theme.colorScheme.surface,
+        color: theme.colorScheme.surface,
         borderRadius: AppRadius.border16,
         border: Border.all(
-          color: isDark
-              ? Colors.white.withAlpha(20)
-              : theme.colorScheme.outlineVariant.withAlpha(80),
+          color: theme.colorScheme.outlineVariant.withAlpha(80),
           width: 1,
         ),
         boxShadow: AppShadows.subtle(context),
@@ -232,14 +222,10 @@ class _SafetyPageState extends ConsumerState<SafetyPage> {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: isDark
-                        ? Colors.white.withAlpha(16)
-                        : theme.colorScheme.surfaceContainerHighest.withAlpha(120),
+                    color: theme.colorScheme.surfaceContainerHighest.withAlpha(120),
                     borderRadius: AppRadius.borderPill,
                     border: Border.all(
-                      color: isDark
-                          ? Colors.white.withAlpha(25)
-                          : theme.colorScheme.outlineVariant.withAlpha(90),
+                      color: theme.colorScheme.outlineVariant.withAlpha(90),
                     ),
                   ),
                   child: Row(
@@ -250,14 +236,14 @@ class _SafetyPageState extends ConsumerState<SafetyPage> {
                         style: theme.textTheme.labelSmall?.copyWith(
                           fontWeight: FontWeight.w600,
                           fontSize: 11,
-                          color: isDark ? AppTheme.lime : theme.colorScheme.primary,
+                          color: theme.colorScheme.primary,
                         ),
                       ),
                       const SizedBox(width: 4),
                       Icon(
                         Icons.edit_outlined,
                         size: 11,
-                        color: isDark ? AppTheme.lime : theme.colorScheme.primary,
+                        color: theme.colorScheme.primary,
                       ),
                     ],
                   ),
@@ -274,9 +260,7 @@ class _SafetyPageState extends ConsumerState<SafetyPage> {
                 return Container(
                   padding: const EdgeInsets.all(AppSpacing.s12),
                   decoration: BoxDecoration(
-                    color: isDark
-                        ? Colors.white.withAlpha(10)
-                        : theme.colorScheme.surfaceContainerHighest.withAlpha(80),
+                    color: theme.colorScheme.surfaceContainerHighest.withAlpha(80),
                     borderRadius: AppRadius.border12,
                     border: Border.all(
                       color: theme.colorScheme.outlineVariant.withAlpha(60),
@@ -353,14 +337,10 @@ class _SafetyPageState extends ConsumerState<SafetyPage> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
-              color: isDark
-                  ? Colors.white.withAlpha(8)
-                  : theme.colorScheme.surfaceContainerHighest.withAlpha(60),
+              color: theme.colorScheme.surfaceContainerHighest.withAlpha(60),
               borderRadius: AppRadius.border12,
               border: Border.all(
-                color: isDark
-                    ? Colors.white.withAlpha(14)
-                    : theme.colorScheme.outlineVariant.withAlpha(50),
+                color: theme.colorScheme.outlineVariant.withAlpha(50),
               ),
             ),
             child: Row(

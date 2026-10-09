@@ -7,7 +7,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/errors/app_error_handler.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/theme/theme_mode_controller.dart';
 import '../../../core/widgets/app_widgets.dart';
 import '../data/auth_repository.dart';
 import '../data/profile_repository.dart';
@@ -26,11 +25,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     final profileAsync = ref.watch(userProfileProvider);
-    final themeMode = ref.watch(themeModeControllerProvider);
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final semantic = theme.extension<AppSemanticColors>() ??
-        (isDark ? AppSemanticColors.dark : AppSemanticColors.light);
+    final semantic = AppSemanticColors.of(context);
 
     return Scaffold(
       body: profileAsync.when(
@@ -568,108 +564,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               ),
               const SizedBox(height: AppSpacing.s12),
 
-              // 5. Appearance Card
-              AppCard(
-                variant: AppCardVariant.elevated,
-                borderRadius: AppRadius.r16,
-                padding: const EdgeInsets.all(AppSpacing.s16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 32,
-                          height: 32,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.primary.withAlpha(20),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.palette_outlined,
-                            color: theme.colorScheme.primary,
-                            size: 17,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          'Appearance',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
-                            letterSpacing: -0.2,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        for (final option in [
-                          (
-                            label: 'System',
-                            mode: ThemeMode.system,
-                            icon: Icons.brightness_auto_rounded,
-                          ),
-                          (
-                            label: 'Light',
-                            mode: ThemeMode.light,
-                            icon: Icons.light_mode_rounded,
-                          ),
-                          (
-                            label: 'Dark',
-                            mode: ThemeMode.dark,
-                            icon: Icons.dark_mode_rounded,
-                          ),
-                        ])
-                          ChoiceChip(
-                            showCheckmark: false,
-                            avatar: Icon(
-                              option.icon,
-                              size: 15,
-                              color: themeMode == option.mode
-                                  ? (isDark ? AppTheme.darkForestSurfaceDark : Colors.white)
-                                  : theme.colorScheme.onSurface.withAlpha(160),
-                            ),
-                            label: Text(option.label),
-                            labelStyle: TextStyle(
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w600,
-                              color: themeMode == option.mode
-                                  ? (isDark ? AppTheme.darkForestSurfaceDark : Colors.white)
-                                  : theme.colorScheme.onSurface,
-                            ),
-                            selected: themeMode == option.mode,
-                            selectedColor: isDark ? AppTheme.lime : theme.colorScheme.primary,
-                            backgroundColor: isDark
-                                ? Colors.white.withAlpha(10)
-                                : theme.colorScheme.surfaceContainerHighest.withAlpha(120),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: AppRadius.borderPill,
-                              side: BorderSide(
-                                color: themeMode == option.mode
-                                    ? Colors.transparent
-                                    : (isDark
-                                        ? Colors.white.withAlpha(20)
-                                        : theme.colorScheme.outlineVariant.withAlpha(70)),
-                              ),
-                            ),
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                            onSelected: (_) => ref
-                                .read(themeModeControllerProvider.notifier)
-                                .setThemeMode(option.mode),
-                          ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // 6. Actions: Sign Out & Delete Account
+              // 5. Actions: Sign Out & Delete Account
               SizedBox(
                 width: double.infinity,
                 child: AppButton(
@@ -729,10 +624,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
       if (!mounted) return;
 
       final prettyJson = const JsonEncoder.withIndent('  ').convert(data);
-      final semantic = Theme.of(context).extension<AppSemanticColors>() ??
-          (Theme.of(context).brightness == Brightness.dark
-              ? AppSemanticColors.dark
-              : AppSemanticColors.light);
+      final semantic = AppSemanticColors.of(context);
 
       await showDialog<void>(
         context: context,
@@ -913,10 +805,7 @@ class _ProfileLoadingSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final placeholderColor = isDark
-        ? theme.colorScheme.surfaceContainerHighest
-        : theme.colorScheme.surfaceContainer;
+    final placeholderColor = theme.colorScheme.surfaceContainer;
 
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.s8),

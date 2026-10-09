@@ -169,7 +169,6 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final currentUser = ref.watch(currentUserProvider);
     final userProfile = ref.watch(userProfileProvider).value;
 
@@ -226,7 +225,7 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
                 : Icons.favorite_border_rounded,
             iconColor: _isFavorite
                 ? Colors.redAccent
-                : (isDark ? Colors.white : const Color(0xFF132219)),
+                : const Color(0xFF132219),
             tooltip:
                 _isFavorite ? 'Remove from favorites' : 'Save to favorites',
             onPressed: () {
@@ -264,10 +263,10 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
               badge: pendingRequestsCount > 0
                   ? Badge(
                       label: Text('$pendingRequestsCount'),
-                      child: Icon(
+                      child: const Icon(
                         Icons.people_alt_outlined,
                         size: 20,
-                        color: isDark ? Colors.white : const Color(0xFF132219),
+                        color: Color(0xFF132219),
                       ),
                     )
                   : null,
@@ -290,19 +289,15 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
             top: Radius.circular(AppRadius.r20),
           ),
           blur: 20.0,
-          tintColor: isDark
-              ? const Color(0xE6101C15)
-              : const Color(0xEEFFFFFF),
-          borderColor: isDark
-              ? const Color(0x337FA88B)
-              : const Color(0x40D8E2D8),
+          tintColor: const Color(0xEEFFFFFF),
+          borderColor: const Color(0x40D8E2D8),
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.s16,
             vertical: AppSpacing.s12,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withAlpha(isDark ? 80 : 25),
+              color: Colors.black.withAlpha(25),
               blurRadius: 16,
               offset: const Offset(0, -4),
             ),
@@ -855,16 +850,12 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
       decoration: BoxDecoration(
         color: isAccent
             ? theme.colorScheme.primary.withAlpha(25)
-            : (theme.brightness == Brightness.dark
-                ? Colors.white.withAlpha(16)
-                : theme.colorScheme.surfaceContainerHighest.withAlpha(140)),
+            : theme.colorScheme.surfaceContainerHighest.withAlpha(140),
         borderRadius: AppRadius.borderPill,
         border: Border.all(
           color: isAccent
               ? theme.colorScheme.primary.withAlpha(60)
-              : (theme.brightness == Brightness.dark
-                  ? Colors.white.withAlpha(24)
-                  : theme.colorScheme.outlineVariant.withAlpha(80)),
+              : theme.colorScheme.outlineVariant.withAlpha(80),
         ),
       ),
       child: Row(
@@ -1027,10 +1018,7 @@ class _TripDetailLoadingSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final placeholderColor = isDark
-        ? theme.colorScheme.surfaceContainerHighest
-        : theme.colorScheme.surfaceContainer;
+    final placeholderColor = theme.colorScheme.surfaceContainer;
 
     return Scaffold(
       body: SingleChildScrollView(

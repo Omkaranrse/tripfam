@@ -33,21 +33,35 @@ class ChatMessage {
   }) {
     final senderProfile = json['sender_profile'] as Map<String, dynamic>?;
 
+    DateTime parsedDate;
+    final rawDate = json['created_at'] ?? json['createdAt'];
+    if (rawDate is DateTime) {
+      parsedDate = rawDate;
+    } else if (rawDate is String) {
+      parsedDate = DateTime.tryParse(rawDate) ?? DateTime.now();
+    } else if (rawDate != null && rawDate.runtimeType.toString().contains('Timestamp')) {
+      try {
+        parsedDate = (rawDate as dynamic).toDate() as DateTime;
+      } catch (_) {
+        parsedDate = DateTime.now();
+      }
+    } else {
+      parsedDate = DateTime.now();
+    }
+
     return ChatMessage(
-      id: json['id'] as String,
-      tripId: json['trip_id'] as String,
-      senderId: json['sender_id'] as String,
+      id: (json['id'] as String?) ?? '',
+      tripId: (json['trip_id'] as String?) ?? (json['tripId'] as String?) ?? '',
+      senderId: (json['sender_id'] as String?) ?? (json['senderId'] as String?) ?? '',
       content: TextSanitizer.sanitize(json['content'] as String?),
-      createdAt: json['created_at'] != null
-          ? DateTime.parse(json['created_at'] as String)
-          : DateTime.now(),
+      createdAt: parsedDate,
       senderName: senderProfile != null
           ? TextSanitizer.sanitize(senderProfile['display_name'] as String?)
-          : null,
-      senderAvatar: senderProfile?['avatar_path'] as String?,
+          : TextSanitizer.sanitize(json['senderName'] as String?),
+      senderAvatar: senderProfile?['avatar_path'] as String? ?? (json['senderAvatar'] as String?),
       status: MessageSendStatus.sent,
-      clientId: json['client_id'] as String?,
-      clientTempId: json['client_id'] as String?,
+      clientId: (json['client_id'] as String?) ?? (json['clientId'] as String?),
+      clientTempId: (json['client_id'] as String?) ?? (json['clientId'] as String?),
       kind: MessageKind.fromString(json['kind'] as String?),
     );
   }

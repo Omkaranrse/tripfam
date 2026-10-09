@@ -97,9 +97,7 @@ class JoinRequestProgressStepper extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                     fontSize: 10.5,
                     color: stage == JoinRequestStage.bothConfirmed
-                        ? (theme.brightness == Brightness.dark
-                            ? Colors.green.shade300
-                            : Colors.green.shade800)
+                        ? Colors.green.shade800
                         : theme.colorScheme.primary,
                   ),
                 ),

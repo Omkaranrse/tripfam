@@ -376,11 +376,15 @@ class _ChatRoomViewState extends ConsumerState<ChatRoomView> {
                     children: [
                       const Icon(Icons.calendar_today_rounded, size: 14),
                       const SizedBox(width: 6),
-                      Text(
-                        datesStr,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
+                      Expanded(
+                        child: Text(
+                          datesStr,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],

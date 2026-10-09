@@ -49,9 +49,7 @@ class AvatarStack extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: badgeBackgroundColor ??
-              (theme.brightness == Brightness.dark
-                  ? Colors.white.withAlpha(25)
-                  : theme.colorScheme.surfaceContainerHighest.withAlpha(150)),
+              theme.colorScheme.surfaceContainerHighest.withAlpha(150),
           borderRadius: AppRadius.borderPill,
           border: Border.all(
             color: resolvedBorder.withAlpha(80),

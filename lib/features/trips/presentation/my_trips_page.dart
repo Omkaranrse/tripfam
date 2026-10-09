@@ -215,12 +215,9 @@ class _MyTripCardState extends State<_MyTripCard> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final disableAnimations = MediaQuery.disableAnimationsOf(context);
 
-    final cardBg = isDark
-        ? AppTheme.darkForestSurfaceDark
-        : theme.colorScheme.surface;
+    final cardBg = theme.colorScheme.surface;
 
     final dateStr =
         '${widget.trip.startDate.day}/${widget.trip.startDate.month} – ${widget.trip.endDate.day}/${widget.trip.endDate.month}';
@@ -234,9 +231,7 @@ class _MyTripCardState extends State<_MyTripCard> {
           color: cardBg,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isDark
-                ? Colors.white.withAlpha(20)
-                : theme.colorScheme.outlineVariant.withAlpha(70),
+            color: theme.colorScheme.outlineVariant.withAlpha(70),
             width: 1,
           ),
           boxShadow: AppShadows.subtle(context),
@@ -292,18 +287,14 @@ class _MyTripCardState extends State<_MyTripCard> {
                                   Icon(
                                     Icons.calendar_today_outlined,
                                     size: 11,
-                                    color: isDark
-                                        ? AppTheme.lime
-                                        : theme.colorScheme.primary,
+                                    color: theme.colorScheme.primary,
                                   ),
                                   const SizedBox(width: 4),
                                   Flexible(
                                     child: Text(
                                       dateStr,
                                       style: TextStyle(
-                                        color: isDark
-                                            ? AppTheme.lime
-                                            : theme.colorScheme.primary,
+                                        color: theme.colorScheme.primary,
                                         fontSize: 10.5,
                                         fontWeight: FontWeight.w600,
                                       ),
@@ -407,18 +398,13 @@ class _MySubmittedRequestCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     return Container(
       decoration: BoxDecoration(
-        color: isDark
-            ? AppTheme.darkForestSurfaceDark
-            : theme.colorScheme.surface,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark
-              ? Colors.white.withAlpha(20)
-              : theme.colorScheme.outlineVariant.withAlpha(70),
+          color: theme.colorScheme.outlineVariant.withAlpha(70),
           width: 1,
         ),
         boxShadow: AppShadows.subtle(context),

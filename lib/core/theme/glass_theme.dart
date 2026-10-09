@@ -56,22 +56,12 @@ class GlassTheme extends ThemeExtension<GlassTheme> {
     borderWidth: 1.0,
   );
 
-  /// Dark theme preset: obsidian forest glass with luminous sage boundary.
-  static const GlassTheme dark = GlassTheme(
-    tintColor: Color(0x99101C15), // 60% forest obsidian
-    borderColor: Color(0x337FA88B), // 20% luminous sage stroke
-    highlightColor: Color(0x2EFFFFFF), // 18% top specular highlight
-    fallbackColor: Color(0xF216241C), // dark forest surface fallback
-    blur: 18.0,
-    borderWidth: 1.0,
-  );
-
   /// Convenience lookup with automatic fallback if not registered in theme.
   static GlassTheme of(BuildContext context) {
     final theme = Theme.of(context);
     final ext = theme.extension<GlassTheme>();
     if (ext != null) return ext;
-    return theme.brightness == Brightness.dark ? dark : light;
+    return light;
   }
 
   @override

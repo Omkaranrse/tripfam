@@ -17,7 +17,6 @@ class CategorySliderBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     return SizedBox(
       height: 28,
@@ -36,16 +35,12 @@ class CategorySliderBar extends StatelessWidget {
             decoration: BoxDecoration(
               color: isSelected
                   ? theme.colorScheme.primary
-                  : (isDark
-                        ? const Color(0xFF16241C)
-                        : const Color(0xFFE5EDE6)),
+                  : const Color(0xFFE5EDE6),
               borderRadius: BorderRadius.circular(AppRadius.pill),
               border: Border.all(
                 color: isSelected
                     ? theme.colorScheme.primary
-                    : (isDark
-                          ? Colors.white.withAlpha(20)
-                          : theme.colorScheme.outline.withAlpha(50)),
+                    : theme.colorScheme.outline.withAlpha(50),
               ),
               boxShadow: isSelected ? AppShadows.subtle(context) : null,
             ),

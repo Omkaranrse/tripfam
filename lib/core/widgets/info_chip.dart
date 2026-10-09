@@ -29,16 +29,15 @@ class InfoChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     if (variant == InfoChipVariant.glass) {
-      final resolvedText = textColor ?? (isDark ? Colors.white : Colors.white);
+      final resolvedText = textColor ?? Colors.white;
       final resolvedIcon = iconColor ?? const Color(0xFFC6E062);
 
       return GlassContainer(
         borderRadius: AppRadius.borderPill,
         blur: 14.0,
-        tintColor: Colors.black.withAlpha(isDark ? 90 : 70),
+        tintColor: Colors.black.withAlpha(70),
         borderColor: Colors.white.withAlpha(50),
         highlightColor: Colors.white.withAlpha(60),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -84,9 +83,7 @@ class InfoChip extends StatelessWidget {
         resolvedText = textColor ?? Colors.white;
         resolvedIcon = iconColor ?? const Color(0xFFC6E062); // Lime accent
       case InfoChipVariant.surface:
-        bg = isDark
-            ? theme.colorScheme.surfaceContainerHighest.withAlpha(160)
-            : const Color(0xFFE5EDE6);
+        bg = const Color(0xFFE5EDE6);
         border = Border.all(color: theme.colorScheme.outline.withAlpha(40));
         resolvedText = textColor ?? theme.colorScheme.onSurface;
         resolvedIcon = iconColor ?? theme.colorScheme.primary;

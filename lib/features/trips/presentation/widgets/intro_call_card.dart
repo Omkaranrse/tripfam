@@ -8,6 +8,7 @@ import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../data/join_request_repository.dart';
 import '../../domain/join_request.dart';
+import '../../../safety/presentation/webrtc_call_dialog.dart';
 import 'intro_call_dialog.dart';
 
 class IntroCallCard extends ConsumerStatefulWidget {
@@ -141,9 +142,7 @@ class _IntroCallCardState extends ConsumerState<IntroCallCard> {
                           fontWeight: FontWeight.bold,
                           fontSize: 13.5,
                           color: call.isBothConfirmed
-                              ? (theme.brightness == Brightness.dark
-                                  ? Colors.green.shade300
-                                  : Colors.green.shade800)
+                              ? Colors.green.shade800
                               : theme.colorScheme.onSurface,
                         ),
                         maxLines: 1,
@@ -259,6 +258,21 @@ class _IntroCallCardState extends ConsumerState<IntroCallCard> {
                   },
                 ),
               ],
+            ),
+            const SizedBox(height: 8),
+            AppButton(
+              label: 'Join In-App Live WebRTC Call',
+              icon: Icons.video_camera_front_rounded,
+              size: AppButtonSize.small,
+              isFullWidth: true,
+              variant: AppButtonVariant.outlined,
+              onPressed: () => WebRtcCallDialog.show(
+                context,
+                tripId: widget.joinRequest.tripId,
+                tripTitle: 'Intro Call',
+                callerId: widget.joinRequest.userId,
+                receiverId: widget.joinRequest.tripHostId ?? 'host',
+              ),
             ),
             const SizedBox(height: 10),
 
@@ -396,9 +410,7 @@ class _IntroCallCardState extends ConsumerState<IntroCallCard> {
             '$label: ${isConfirmed ? 'Confirmed' : 'Pending'}',
             style: theme.textTheme.labelSmall?.copyWith(
               color: isConfirmed
-                  ? (theme.brightness == Brightness.dark
-                      ? Colors.green.shade300
-                      : Colors.green.shade800)
+                  ? Colors.green.shade800
                   : theme.colorScheme.onSurface.withAlpha(160),
               fontWeight: FontWeight.w600,
               fontSize: 10,

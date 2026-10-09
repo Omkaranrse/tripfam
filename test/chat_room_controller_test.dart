@@ -85,12 +85,15 @@ class FakeRealtimeChannel extends Fake implements RealtimeChannel {
   Future<String> unsubscribe([Duration? timeout]) async => 'ok';
 }
 
-class FakeUser extends Fake implements User {
+class FakeUser extends Fake implements AppUser {
   @override
   String get id => 'user_123';
 
   @override
-  Map<String, dynamic> get userMetadata => {'full_name': 'Omkar A.'};
+  String? get displayName => 'Omkar A.';
+
+  @override
+  Map<String, dynamic> get userMetadata => {'display_name': 'Omkar A.', 'full_name': 'Omkar A.'};
 }
 
 class FakeUserProfileNotifier extends UserProfileNotifier {

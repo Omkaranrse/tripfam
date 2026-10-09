@@ -4,9 +4,9 @@ import 'package:tripfam/core/theme/app_theme.dart';
 import 'package:tripfam/core/widgets/app_widgets.dart';
 
 void main() {
-  Widget testWrapper(Widget child, {bool isDark = false}) {
+  Widget testWrapper(Widget child) {
     return MaterialApp(
-      theme: isDark ? AppTheme.dark : AppTheme.light,
+      theme: AppTheme.light,
       home: Scaffold(body: Center(child: child)),
     );
   }

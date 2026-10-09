@@ -22,20 +22,14 @@ class SegmentedTabs extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final disableAnimations = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
 
-    final containerBg = isDark
-        ? const Color(0xFF101C15)
-        : theme.colorScheme.surfaceContainerHighest.withAlpha(120);
+    final containerBg =
+        theme.colorScheme.surfaceContainerHighest.withAlpha(120);
 
-    final thumbColor = isDark
-        ? theme.colorScheme.primary
-        : theme.colorScheme.surface;
+    final thumbColor = theme.colorScheme.surface;
 
-    final selectedTextColor = isDark
-        ? const Color(0xFF071E12)
-        : theme.colorScheme.primary;
+    final selectedTextColor = theme.colorScheme.primary;
 
     final unselectedTextColor = theme.colorScheme.onSurface.withAlpha(170);
 
@@ -54,9 +48,7 @@ class SegmentedTabs extends StatelessWidget {
             color: containerBg,
             borderRadius: AppRadius.borderPill,
             border: Border.all(
-              color: isDark
-                  ? Colors.white.withAlpha(18)
-                  : theme.colorScheme.outlineVariant.withAlpha(80),
+              color: theme.colorScheme.outlineVariant.withAlpha(80),
             ),
           ),
           child: Stack(
@@ -77,7 +69,7 @@ class SegmentedTabs extends StatelessWidget {
                     borderRadius: AppRadius.borderPill,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withAlpha(isDark ? 50 : 20),
+                        color: Colors.black.withAlpha(20),
                         blurRadius: 6,
                         offset: const Offset(0, 2),
                       ),

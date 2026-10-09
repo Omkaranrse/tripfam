@@ -10,7 +10,7 @@ import '../theme/app_theme.dart';
 /// - Isolated in a [RepaintBoundary] to ensure high frame rates (16ms budget).
 /// - Automatically disables expensive backdrop filtering when animations are
 ///   disabled or when [GlassConfig.enabled] is false.
-/// - Adheres to [GlassTheme] tokens with adaptive light/dark tints.
+/// - Adheres to [GlassTheme] tokens.
 /// - Optional soft specular highlight along the top edge for realism.
 class GlassContainer extends StatelessWidget {
   const GlassContainer({
@@ -165,12 +165,7 @@ class GlassIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    final defaultIconColor = isDark
-        ? Colors.white
-        : const Color(0xFF132219);
+    const defaultIconColor = Color(0xFF132219);
 
     final resolvedIconColor = iconColor ?? defaultIconColor;
 

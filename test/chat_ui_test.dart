@@ -14,9 +14,12 @@ import 'package:tripfam/features/chats/presentation/widgets/chat_message_bubble.
 import 'package:tripfam/features/chats/presentation/widgets/chat_room_view.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class FakeUser extends Fake implements User {
+class FakeUser extends Fake implements AppUser {
   @override
   String get id => 'user_me';
+
+  @override
+  String? get displayName => 'Omkar A.';
 
   @override
   Map<String, dynamic> get userMetadata => {'display_name': 'Omkar A.'};
@@ -319,6 +322,94 @@ void main() {
       expect(find.text('Copy message'), findsOneWidget);
       expect(find.text('Report message or user'), findsOneWidget);
       expect(find.text('Block user'), findsOneWidget);
+    });
+
+    testWidgets(
+        'renders responsively without RenderFlex overflow in 483px master-detail pane for long messages',
+        (tester) async {
+      final now = DateTime.now();
+      final longMsg = ChatMessage(
+        id: 'msg_long',
+        tripId: 'trip_1',
+        senderId: 'user_1',
+        senderName: 'Omkar Anarse',
+        content:
+            'This is an exceptionally long message designed to simulate a real-world chat conversation where someone shares detailed itinerary directions, packing lists, meeting points, flight numbers, and other extensive travel notes across several paragraphs without any layout crashes or overflow exceptions.',
+        createdAt: now,
+      );
+
+      final item = ChatMessageBubbleItem(
+        message: longMsg,
+        isMine: true,
+        isFirstInGroup: true,
+        isLastInGroup: true,
+        showSenderHeader: false,
+        gapBelow: 8.0,
+      );
+
+      // Render inside a 483px wide container matching the exact master-detail pane
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.light,
+          home: Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: 483,
+                child: ChatMessageBubble(item: item),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      // No assertion exceptions / RenderFlex overflow should occur
+      expect(tester.takeException(), isNull);
+      expect(find.byType(ChatMessageBubble), findsOneWidget);
+    });
+
+    testWidgets(
+        'renders responsively without RenderFlex overflow on narrow 320px mobile screen with retry button',
+        (tester) async {
+      final now = DateTime.now();
+      final failedMsg = ChatMessage(
+        id: 'msg_failed',
+        tripId: 'trip_1',
+        senderId: 'user_1',
+        senderName: 'Omkar Anarse',
+        content:
+            'Failed message with long content on a tiny 320px screen width with retry button.',
+        createdAt: now,
+        status: MessageSendStatus.failed,
+      );
+
+      final item = ChatMessageBubbleItem(
+        message: failedMsg,
+        isMine: true,
+        isFirstInGroup: true,
+        isLastInGroup: true,
+        showSenderHeader: false,
+        gapBelow: 8.0,
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.light,
+          home: Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: 320,
+                child: ChatMessageBubble(
+                  item: item,
+                  onRetry: () {},
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      expect(tester.takeException(), isNull);
+      expect(find.byIcon(Icons.error_outline_rounded), findsWidgets);
     });
   });
 

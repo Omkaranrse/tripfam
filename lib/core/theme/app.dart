@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../router/app_router.dart';
 import 'app_theme.dart';
-import 'theme_mode_controller.dart';
 
 class TripMateApp extends ConsumerWidget {
   const TripMateApp({super.key});
@@ -14,8 +13,7 @@ class TripMateApp extends ConsumerWidget {
       title: 'TripMate',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
-      themeMode: ref.watch(themeModeControllerProvider),
+      themeMode: ThemeMode.light,
       routerConfig: ref.watch(appRouterProvider),
     );
   }

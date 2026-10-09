@@ -97,7 +97,6 @@ class _JoinRequestFormSheetState extends ConsumerState<JoinRequestFormSheet> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final trip = widget.trip;
     final userProfileAsync = ref.watch(userProfileProvider);
     final userProfile = userProfileAsync.value;
@@ -125,7 +124,7 @@ class _JoinRequestFormSheetState extends ConsumerState<JoinRequestFormSheet> {
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(isDark ? 100 : 40),
+            color: Colors.black.withAlpha(40),
             blurRadius: 20,
             offset: const Offset(0, -6),
           ),
@@ -158,9 +157,7 @@ class _JoinRequestFormSheetState extends ConsumerState<JoinRequestFormSheet> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: isDark
-                        ? theme.colorScheme.surfaceContainerHighest.withAlpha(60)
-                        : theme.colorScheme.surfaceContainer.withAlpha(120),
+                    color: theme.colorScheme.surfaceContainer.withAlpha(120),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
                       color: theme.colorScheme.outlineVariant.withAlpha(60),
@@ -312,7 +309,7 @@ class _JoinRequestFormSheetState extends ConsumerState<JoinRequestFormSheet> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.amber.withAlpha(isDark ? 25 : 20),
+                      color: Colors.amber.withAlpha(20),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
                         color: Colors.amber.withAlpha(120),

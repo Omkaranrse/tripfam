@@ -22,14 +22,11 @@ class AppFilterChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final disableAnimations = MediaQuery.disableAnimationsOf(context);
 
     final resolvedBg = isSelected
         ? theme.colorScheme.primary
-        : (isDark
-            ? theme.colorScheme.surfaceContainerHighest.withAlpha(120)
-            : const Color(0xFFE3EBE4));
+        : const Color(0xFFE3EBE4);
 
     final resolvedTextColor = isSelected
         ? theme.colorScheme.onPrimary
@@ -56,7 +53,7 @@ class AppFilterChip extends StatelessWidget {
           color: resolvedBg,
           borderRadius: AppRadius.borderPill,
           border: resolvedBorder,
-          boxShadow: isSelected && !isDark
+          boxShadow: isSelected
               ? [
                   BoxShadow(
                     color: theme.colorScheme.primary.withAlpha(35),

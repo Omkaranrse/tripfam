@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "727248616608",
+    "project_id": "tripfam-8cb27",
+    "storage_bucket": "tripfam-8cb27.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:727248616608:android:45542ae4b60a0b4c5d1dc5",
+        "android_client_info": {
+          "package_name": "com.omkar.tripfam"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAa2lhC64Ku-b4OltxFtiYt0OAf511zWRk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

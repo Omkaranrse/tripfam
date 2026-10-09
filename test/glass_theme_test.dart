@@ -9,9 +9,8 @@ void main() {
       GlassConfig.enabled = true;
     });
 
-    testWidgets('GlassTheme resolves distinct tokens for light and dark themes', (tester) async {
+    testWidgets('GlassTheme resolves tokens for light theme', (tester) async {
       late GlassTheme lightExt;
-      late GlassTheme darkExt;
 
       await tester.pumpWidget(
         Theme(
@@ -25,21 +24,9 @@ void main() {
         ),
       );
 
-      await tester.pumpWidget(
-        Theme(
-          data: AppTheme.dark,
-          child: Builder(
-            builder: (context) {
-              darkExt = GlassTheme.of(context);
-              return const SizedBox.shrink();
-            },
-          ),
-        ),
-      );
-
-      expect(lightExt.tintColor, isNot(equals(darkExt.tintColor)));
-      expect(lightExt.borderColor, isNot(equals(darkExt.borderColor)));
-      expect(lightExt.fallbackColor, isNot(equals(darkExt.fallbackColor)));
+      expect(lightExt.tintColor, equals(GlassTheme.light.tintColor));
+      expect(lightExt.borderColor, equals(GlassTheme.light.borderColor));
+      expect(lightExt.fallbackColor, equals(GlassTheme.light.fallbackColor));
     });
 
     testWidgets('GlassContainer renders BackdropFilter when blur is active', (tester) async {

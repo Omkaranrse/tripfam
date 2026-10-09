@@ -261,37 +261,35 @@ void main() {
     });
   });
 
-  group('Multi-Breakpoint Responsiveness & Theme Tests', () {
+  group('Multi-Breakpoint Responsiveness Tests', () {
     for (final width in [400.0, 800.0, 1400.0]) {
-      for (final isDark in [false, true]) {
-        testWidgets('DiscoverPage renders at ${width.toInt()}px in ${isDark ? 'Dark' : 'Light'} mode without overflow', (tester) async {
-          final trips = makeTestTrips();
-          tester.view.physicalSize = Size(width, 900);
-          tester.view.devicePixelRatio = 1.0;
-          addTearDown(tester.view.resetPhysicalSize);
+      testWidgets('DiscoverPage renders at ${width.toInt()}px without overflow', (tester) async {
+        final trips = makeTestTrips();
+        tester.view.physicalSize = Size(width, 900);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
 
-          await tester.pumpWidget(
-            ProviderScope(
-              overrides: [
-                sharedPreferencesProvider.overrideWithValue(prefs),
-                tripRepositoryProvider.overrideWithValue(MockTripRepository(trips)),
-                savedTripRepositoryProvider.overrideWithValue(mockSavedRepo),
-                blockedUsersProvider.overrideWith((ref) => Future.value({})),
-                userProfileProvider.overrideWith(_MockUserProfileNotifier.new),
-              ],
-              child: MaterialApp(
-                theme: isDark ? AppTheme.dark : AppTheme.light,
-                home: const DiscoverPage(),
-              ),
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              sharedPreferencesProvider.overrideWithValue(prefs),
+              tripRepositoryProvider.overrideWithValue(MockTripRepository(trips)),
+              savedTripRepositoryProvider.overrideWithValue(mockSavedRepo),
+              blockedUsersProvider.overrideWith((ref) => Future.value({})),
+              userProfileProvider.overrideWith(_MockUserProfileNotifier.new),
+            ],
+            child: MaterialApp(
+              theme: AppTheme.light,
+              home: const DiscoverPage(),
             ),
-          );
+          ),
+        );
 
-          await tester.pumpAndSettle();
+        await tester.pumpAndSettle();
 
-          expect(find.byType(DiscoverPage), findsOneWidget);
-          expect(tester.takeException(), isNull);
-        });
-      }
+        expect(find.byType(DiscoverPage), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      });
     }
   });
 }

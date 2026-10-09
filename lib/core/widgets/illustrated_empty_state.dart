@@ -48,7 +48,6 @@ class IllustratedEmptyState extends StatelessWidget {
                   type: type,
                   primaryColor: theme.colorScheme.primary,
                   accentColor: const Color(0xFFC6E062), // Lime accent
-                  isDark: theme.brightness == Brightness.dark,
                 ),
               ),
             ),
@@ -92,13 +91,11 @@ class _BrandIllustrationPainter extends CustomPainter {
     required this.type,
     required this.primaryColor,
     required this.accentColor,
-    required this.isDark,
   });
 
   final EmptyIllustrationType type;
   final Color primaryColor;
   final Color accentColor;
-  final bool isDark;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -106,7 +103,7 @@ class _BrandIllustrationPainter extends CustomPainter {
     final h = size.height;
 
     final basePaint = Paint()
-      ..color = primaryColor.withAlpha(isDark ? 30 : 20)
+      ..color = primaryColor.withAlpha(20)
       ..style = PaintingStyle.fill;
 
     final primaryLine = Paint()
@@ -144,7 +141,7 @@ class _BrandIllustrationPainter extends CustomPainter {
         canvas.drawPath(
           mtnPath,
           Paint()
-            ..color = primaryColor.withAlpha(isDark ? 50 : 35)
+            ..color = primaryColor.withAlpha(35)
             ..style = PaintingStyle.fill,
         );
         canvas.drawPath(mtnPath, primaryLine);
@@ -175,7 +172,7 @@ class _BrandIllustrationPainter extends CustomPainter {
         canvas.drawRRect(
           rect,
           Paint()
-            ..color = primaryColor.withAlpha(isDark ? 45 : 30)
+            ..color = primaryColor.withAlpha(30)
             ..style = PaintingStyle.fill,
         );
         canvas.drawRRect(rect, primaryLine);
@@ -184,12 +181,12 @@ class _BrandIllustrationPainter extends CustomPainter {
         canvas.drawCircle(
           Offset(w * 0.175, h * 0.52),
           8,
-          Paint()..color = (isDark ? const Color(0xFF0F1813) : const Color(0xFFF3F6F1)),
+          Paint()..color = const Color(0xFFF3F6F1),
         );
         canvas.drawCircle(
           Offset(w * 0.825, h * 0.52),
           8,
-          Paint()..color = (isDark ? const Color(0xFF0F1813) : const Color(0xFFF3F6F1)),
+          Paint()..color = const Color(0xFFF3F6F1),
         );
 
         // Dashed fold line
@@ -217,7 +214,7 @@ class _BrandIllustrationPainter extends CustomPainter {
         canvas.drawRRect(
           bubble1,
           Paint()
-            ..color = primaryColor.withAlpha(isDark ? 55 : 35)
+            ..color = primaryColor.withAlpha(35)
             ..style = PaintingStyle.fill,
         );
         canvas.drawRRect(bubble1, primaryLine);
@@ -225,7 +222,7 @@ class _BrandIllustrationPainter extends CustomPainter {
         canvas.drawRRect(
           bubble2,
           Paint()
-            ..color = primaryColor.withAlpha(isDark ? 70 : 45)
+            ..color = primaryColor.withAlpha(45)
             ..style = PaintingStyle.fill,
         );
         canvas.drawRRect(bubble2, primaryLine);
@@ -248,7 +245,7 @@ class _BrandIllustrationPainter extends CustomPainter {
         canvas.drawPath(
           shield,
           Paint()
-            ..color = primaryColor.withAlpha(isDark ? 50 : 30)
+            ..color = primaryColor.withAlpha(30)
             ..style = PaintingStyle.fill,
         );
         canvas.drawPath(shield, primaryLine);
@@ -274,7 +271,7 @@ class _BrandIllustrationPainter extends CustomPainter {
           Offset(w * 0.5, h * 0.5),
           h * 0.35,
           Paint()
-            ..color = primaryColor.withAlpha(isDark ? 40 : 25)
+            ..color = primaryColor.withAlpha(25)
             ..style = PaintingStyle.fill,
         );
         canvas.drawCircle(Offset(w * 0.5, h * 0.5), h * 0.35, primaryLine);
@@ -286,6 +283,6 @@ class _BrandIllustrationPainter extends CustomPainter {
   bool shouldRepaint(covariant _BrandIllustrationPainter oldDelegate) {
     return oldDelegate.type != type ||
         oldDelegate.primaryColor != primaryColor ||
-        oldDelegate.isDark != isDark;
+        oldDelegate.accentColor != accentColor;
   }
 }

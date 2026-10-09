@@ -1,13 +1,13 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/config/app_config.dart';
 import 'core/errors/app_error_handler.dart';
 import 'core/providers/app_providers.dart';
 import 'core/theme/app.dart';
-import 'core/theme/theme_mode_controller.dart';
+import 'firebase_options.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,29 +15,25 @@ Future<void> main() async {
 
   final preferences = await SharedPreferences.getInstance();
   final config = AppConfig.fromEnvironment();
-  var backendReady = false;
+  var firebaseReady = false;
 
-  if (config.isReady) {
-    try {
-      await Supabase.initialize(
-        url: config.url,
-        publishableKey: config.anonKey,
-      );
-      backendReady = true;
-    } on Object {
-      backendReady = false;
-    }
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    firebaseReady = true;
+  } catch (e) {
+    debugPrint('Firebase initialization warning: $e');
+    firebaseReady = false;
   }
 
   runApp(
     ProviderScope(
       overrides: [
         appConfigProvider.overrideWithValue(config),
-        supabaseReadyProvider.overrideWithValue(backendReady),
+        firebaseReadyProvider.overrideWithValue(firebaseReady),
+        supabaseReadyProvider.overrideWithValue(false),
         sharedPreferencesProvider.overrideWithValue(preferences),
-        initialThemeModeProvider.overrideWithValue(
-          storedThemeMode(preferences),
-        ),
       ],
       child: const TripMateApp(),
     ),

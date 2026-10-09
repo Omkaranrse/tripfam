@@ -65,12 +65,9 @@ abstract final class AppMotion {
 abstract final class AppShadows {
   // Tinted layered shadows (palette-colored sage/forest, no glow)
   static List<BoxShadow> subtle(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return [
       BoxShadow(
-        color: isDark
-            ? const Color(0xFF08130B).withAlpha(140)
-            : const Color(0xFF28543E).withAlpha(16),
+        color: const Color(0xFF28543E).withAlpha(16),
         blurRadius: 10,
         offset: const Offset(0, 3),
       ),
@@ -78,19 +75,14 @@ abstract final class AppShadows {
   }
 
   static List<BoxShadow> elevated(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return [
       BoxShadow(
-        color: isDark
-            ? const Color(0xFF040A06).withAlpha(180)
-            : const Color(0xFF28543E).withAlpha(22),
+        color: const Color(0xFF28543E).withAlpha(22),
         blurRadius: 16,
         offset: const Offset(0, 6),
       ),
       BoxShadow(
-        color: isDark
-            ? const Color(0xFF08130B).withAlpha(100)
-            : const Color(0xFF132219).withAlpha(10),
+        color: const Color(0xFF132219).withAlpha(10),
         blurRadius: 6,
         offset: const Offset(0, 2),
       ),
@@ -98,19 +90,14 @@ abstract final class AppShadows {
   }
 
   static List<BoxShadow> floating(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return [
       BoxShadow(
-        color: isDark
-            ? const Color(0xFF020704).withAlpha(220)
-            : const Color(0xFF28543E).withAlpha(30),
+        color: const Color(0xFF28543E).withAlpha(30),
         blurRadius: 28,
         offset: const Offset(0, 10),
       ),
       BoxShadow(
-        color: isDark
-            ? const Color(0xFF08130B).withAlpha(120)
-            : const Color(0xFF132219).withAlpha(14),
+        color: const Color(0xFF132219).withAlpha(14),
         blurRadius: 8,
         offset: const Offset(0, 3),
       ),

@@ -1,0 +1,154 @@
+rules_version = '2';
+
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// Collection: users
+// Document ID: userId (matches auth.uid)
+// Fields:
+//   - id: string (required)
+//   - email: string (optional)
+//   - displayName: string (optional)
+//   - avatarUrl: string (optional)
+//   - createdAt: timestamp / string (optional)
+//
+// Collection: trips
+// Document ID: tripId
+// Fields:
+//   - id: string (required)
+//   - destination: string (required)
+//   - hostId: string (required)
+//   - members: list of string (optional)
+//
+// Collection: chats/{tripId}/messages/{messageId}
+// Document ID: messageId
+// Fields:
+//   - id: string (required)
+//   - tripId: string (required)
+//   - senderId: string (required)
+//   - content: string (required)
+//   - createdAt: timestamp (required)
+//
+// Collection: chats/{tripId}/typing/{userId}
+// Document ID: userId
+// Fields:
+//   - userName: string (optional)
+//   - timestamp: timestamp (optional)
+//
+// Collection: calls/{callId}
+// Document ID: callId
+// Fields:
+//   - tripId: string (required)
+//   - callerId: string (required)
+//   - receiverId: string (required)
+//   - status: string (required)
+//   - offer: map (optional)
+//   - answer: map (optional)
+//
+// Subcollections:
+//   - calls/{callId}/callerCandidates/{candId}
+//   - calls/{callId}/receiverCandidates/{candId}
+//
+// ===============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Users
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+
+      match /blocks/{blockedId} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    // Trips
+    match /trips/{tripId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.hostId == request.auth.uid;
+      allow update, delete: if isAuthenticated() && (
+        resource.data.hostId == request.auth.uid ||
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['members', 'lastMessage'])
+      );
+    }
+
+    // Saved Trips
+    match /saved_trips/{saveId} {
+      allow read: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid);
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+
+    // Join Requests
+    match /join_requests/{requestId} {
+      allow read: if isAuthenticated() && (
+        resource == null ||
+        resource.data.userId == request.auth.uid ||
+        resource.data.hostId == request.auth.uid
+      );
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.hostId == request.auth.uid
+      );
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+
+    // Chats and Real-Time Messages
+    match /chats/{tripId} {
+      allow read, write: if isAuthenticated();
+
+      match /messages/{messageId} {
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated() && request.resource.data.senderId == request.auth.uid;
+        allow update, delete: if isAuthenticated() && resource.data.senderId == request.auth.uid;
+      }
+
+      match /typing/{userId} {
+        allow read: if isAuthenticated();
+        allow write: if isOwner(userId);
+      }
+
+      match /reads/{userId} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    // WebRTC Live Calls
+    match /calls/{callId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.callerId == request.auth.uid;
+      allow update: if isAuthenticated() && (
+        resource.data.callerId == request.auth.uid ||
+        resource.data.receiverId == request.auth.uid
+      );
+      allow delete: if isAuthenticated() && resource.data.callerId == request.auth.uid;
+
+      match /callerCandidates/{candidateId} {
+        allow read, write: if isAuthenticated();
+      }
+
+      match /receiverCandidates/{candidateId} {
+        allow read, write: if isAuthenticated();
+      }
+    }
+
+    // Reports
+    match /reports/{reportId} {
+      allow create: if isAuthenticated() && request.resource.data.reporterUserId == request.auth.uid;
+      allow read, update, delete: if false; // Admin only
+    }
+  }
+}

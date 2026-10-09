@@ -53,7 +53,6 @@ class StatusPill extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final semantic = AppSemanticColors.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     Color color;
     switch (tone) {
@@ -69,8 +68,8 @@ class StatusPill extends StatelessWidget {
         color = theme.colorScheme.onSurface.withAlpha(160);
     }
 
-    final bgColor = color.withAlpha(isDark ? 35 : 22);
-    final borderColor = color.withAlpha(isDark ? 80 : 50);
+    final bgColor = color.withAlpha(22);
+    final borderColor = color.withAlpha(50);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),

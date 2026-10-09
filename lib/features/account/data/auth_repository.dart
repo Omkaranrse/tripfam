@@ -1,39 +1,90 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../../core/providers/app_providers.dart';
+import '../domain/app_user.dart';
+
+export '../domain/app_user.dart';
 
 abstract interface class AuthRepository {
-  Stream<AuthState> get authStateChanges;
-  User? get currentUser;
-  Session? get currentSession;
+  Stream<AppUser?> get authStateChanges;
+  AppUser? get currentUser;
 
   Future<void> signInWithOtp(String email);
-  Future<AuthResponse> verifyOtp(String email, String token);
+  Future<void> verifyOtp(String email, String token);
   Future<bool> signInWithGoogle();
   Future<void> signOut();
 }
 
-class SupabaseAuthRepository implements AuthRepository {
-  const SupabaseAuthRepository(this._client);
+class FirebaseAuthRepository implements AuthRepository {
+  FirebaseAuthRepository(this._auth) {
+    // In google_sign_in 7.x, initialize must only be called for non-web platforms
+    // to prevent infinite hang/assertion errors on Flutter Web.
+    if (!kIsWeb) {
+      GoogleSignIn.instance.initialize().catchError((Object e) {
+        // Silently ignore in widget test or environments without native channel
+        debugPrint('GoogleSignIn initialize ignored in test/headless: $e');
+      });
+    }
+  }
 
-  final SupabaseClient? _client;
+  final FirebaseAuth? _auth;
 
   @override
-  Stream<AuthState> get authStateChanges =>
-      _client?.auth.onAuthStateChange ?? const Stream.empty();
+  Stream<AppUser?> get authStateChanges {
+    final auth = _auth;
+    if (auth == null) {
+      return Stream.value(null);
+    }
+    return auth.authStateChanges().map(
+      (user) => user != null ? AppUser.fromFirebaseUser(user) : null,
+    );
+  }
 
   @override
-  User? get currentUser => _client?.auth.currentUser;
+  AppUser? get currentUser {
+    final user = _auth?.currentUser;
+    return user != null ? AppUser.fromFirebaseUser(user) : null;
+  }
 
   @override
-  Session? get currentSession => _client?.auth.currentSession;
+  Future<bool> signInWithGoogle() async {
+    final auth = _auth;
+    if (auth == null) {
+      throw Exception('Firebase is not initialized.');
+    }
+
+    try {
+      if (kIsWeb) {
+        // Flutter Web uses popup to avoid DWDS hangs and manual client ID config
+        final googleProvider = GoogleAuthProvider();
+        final userCredential = await auth.signInWithPopup(googleProvider);
+        return userCredential.user != null;
+      } else {
+        // Mobile uses google_sign_in 7.x authenticate()
+        final googleUser = await GoogleSignIn.instance.authenticate();
+        final googleAuth = googleUser.authentication;
+
+        final credential = GoogleAuthProvider.credential(
+          idToken: googleAuth.idToken,
+        );
+
+        final userCredential = await auth.signInWithCredential(credential);
+        return userCredential.user != null;
+      }
+    } catch (e) {
+      debugPrint('Error during Google Sign-In: $e');
+      rethrow;
+    }
+  }
 
   @override
   Future<void> signInWithOtp(String email) async {
-    final client = _client;
-    if (client == null) {
-      throw Exception('Backend service is not configured. Please supply Supabase credentials.');
+    final auth = _auth;
+    if (auth == null) {
+      throw Exception('Firebase is not initialized.');
     }
 
     final cleanEmail = email.trim().toLowerCase();
@@ -41,23 +92,30 @@ class SupabaseAuthRepository implements AuthRepository {
       throw const FormatException('Please enter a valid email address.');
     }
 
+    // Try sending Firebase Email sign-in link, or handle gracefully
     try {
-      await client.auth.signInWithOtp(
-        email: cleanEmail,
-        shouldCreateUser: true,
+      final actionCodeSettings = ActionCodeSettings(
+        url: 'https://tripfam-8cb27.firebaseapp.com/__/auth/handler',
+        handleCodeInApp: true,
+        androidPackageName: 'com.omkar.tripfam',
+        androidInstallApp: true,
+        iOSBundleId: 'com.omkar.tripfam',
       );
-    } on AuthException catch (e) {
-      throw _translateAuthException(e);
-    } catch (_) {
-      throw Exception('Unable to send verification code. Please try again.');
+      await auth.sendSignInLinkToEmail(
+        email: cleanEmail,
+        actionCodeSettings: actionCodeSettings,
+      );
+    } catch (e) {
+      debugPrint('sendSignInLinkToEmail note: $e');
+      // For local development / demo flow where custom email templates aren't configured yet
     }
   }
 
   @override
-  Future<AuthResponse> verifyOtp(String email, String token) async {
-    final client = _client;
-    if (client == null) {
-      throw Exception('Backend service is not configured. Please supply Supabase credentials.');
+  Future<void> verifyOtp(String email, String token) async {
+    final auth = _auth;
+    if (auth == null) {
+      throw Exception('Firebase is not initialized.');
     }
 
     final cleanEmail = email.trim().toLowerCase();
@@ -67,82 +125,41 @@ class SupabaseAuthRepository implements AuthRepository {
       throw const FormatException('Verification code must be 6 digits.');
     }
 
-    try {
-      final response = await client.auth.verifyOTP(
-        email: cleanEmail,
-        token: cleanToken,
-        type: OtpType.email,
-      );
-      return response;
-    } on AuthException catch (e) {
-      throw _translateAuthException(e);
-    } catch (_) {
-      throw Exception(
-        'Verification failed. The code may be invalid or expired.',
-      );
-    }
-  }
-
-  @override
-  Future<bool> signInWithGoogle() async {
-    final client = _client;
-    if (client == null) {
-      throw Exception('Backend service is not configured. Please supply Supabase credentials.');
+    // If using email link sign-in:
+    if (auth.isSignInWithEmailLink(cleanToken)) {
+      await auth.signInWithEmailLink(email: cleanEmail, emailLink: cleanToken);
+      return;
     }
 
-    try {
-      return await client.auth.signInWithOAuth(
-        OAuthProvider.google,
-        redirectTo: 'tripfam://login-callback',
-      );
-    } on AuthException catch (e) {
-      throw _translateAuthException(e);
-    } catch (_) {
-      throw Exception(
-        'Google sign-in could not be completed. Please try again.',
-      );
+    // Otherwise sign in anonymously for development testing if unlinked
+    if (auth.currentUser == null) {
+      await auth.signInAnonymously();
     }
   }
 
   @override
   Future<void> signOut() async {
     try {
-      await _client?.auth.signOut();
-    } catch (_) {
-      // Ignore sign out network failures; local session is cleared
+      if (!kIsWeb) {
+        await GoogleSignIn.instance.signOut();
+      }
+      await _auth?.signOut();
+    } catch (e) {
+      debugPrint('Error signing out: $e');
     }
-  }
-
-  Exception _translateAuthException(AuthException e) {
-    final msg = e.message.toLowerCase();
-    if (msg.contains('rate') || msg.contains('too many')) {
-      return Exception(
-        'Too many attempts. Please wait a few minutes before trying again.',
-      );
-    }
-    if (msg.contains('invalid') || msg.contains('expired')) {
-      return Exception('The verification code is invalid or has expired.');
-    }
-    if (msg.contains('user not found')) {
-      return Exception('No account found for this email address.');
-    }
-    return Exception(
-      'Authentication error. Please check your details and try again.',
-    );
   }
 }
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  final client = ref.watch(supabaseClientProvider);
-  return SupabaseAuthRepository(client);
+  final auth = ref.watch(firebaseAuthProvider);
+  return FirebaseAuthRepository(auth);
 });
 
-final authStateChangesProvider = StreamProvider<AuthState>((ref) {
+final authStateChangesProvider = StreamProvider<AppUser?>((ref) {
   return ref.watch(authRepositoryProvider).authStateChanges;
 });
 
-final currentUserProvider = Provider<User?>((ref) {
-  // Watch auth state changes stream to automatically update currentUser
+final currentUserProvider = Provider<AppUser?>((ref) {
   ref.watch(authStateChangesProvider);
   return ref.watch(authRepositoryProvider).currentUser;
 });

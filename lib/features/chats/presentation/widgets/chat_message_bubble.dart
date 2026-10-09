@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -172,21 +173,16 @@ class ChatMessageBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final message = item.message;
     final timeStr = _formatTime(message.createdAt);
     final senderLabel = item.isMine ? 'You' : message.formattedSenderName;
     final semanticLabel = '$senderLabel, $timeStr, ${message.content}';
 
     // Solid surfaces (no glass)
-    final ownBg = isDark
-        ? const Color(0xFF26402E) // Deep sage dark
-        : const Color(0xFFD6E8DC); // Fresh sage light
-    final ownTextColor = isDark ? Colors.white : const Color(0xFF132219);
+    const ownBg = Color(0xFFD6E8DC); // Fresh sage light
+    const ownTextColor = Color(0xFF132219);
 
-    final otherBg = isDark
-        ? theme.colorScheme.surfaceContainerHighest
-        : const Color(0xFFF1F4F2); // Subtle neutral
+    const otherBg = Color(0xFFF1F4F2); // Subtle neutral
     final otherTextColor = theme.colorScheme.onSurface;
 
     final bubbleBg = item.isMine ? ownBg : otherBg;
@@ -216,106 +212,127 @@ class ChatMessageBubble extends StatelessWidget {
             right: 16,
             bottom: item.gapBelow,
           ),
-          child: Column(
-            crossAxisAlignment: item.isMine
-                ? CrossAxisAlignment.end
-                : CrossAxisAlignment.start,
-            children: [
-              // Sender header for other users on first message in group
-              if (item.showSenderHeader) ...[
-                Padding(
-                  padding: const EdgeInsets.only(left: 4, bottom: 4, top: 4),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CircleAvatar(
-                        radius: 12,
-                        backgroundColor: theme.colorScheme.primary.withAlpha(35),
-                        backgroundImage: message.senderAvatar != null
-                            ? NetworkImage(message.senderAvatar!)
-                            : null,
-                        child: message.senderAvatar == null
-                            ? Text(
-                                senderLabel.isNotEmpty ? senderLabel[0] : 'U',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                  color: theme.colorScheme.primary,
-                                ),
-                              )
-                            : null,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        senderLabel,
-                        style: theme.textTheme.labelMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: theme.colorScheme.primary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              // Responsive bubble max width based on actual available pane/container width
+              final availableWidth = constraints.maxWidth;
+              final factor = availableWidth < 360 ? 0.85 : 0.78;
+              final maxBubbleWidth = math.min(
+                520.0,
+                math.max(140.0, availableWidth * factor),
+              );
 
-              // Bubble & Status Row
-              Row(
-                mainAxisAlignment: item.isMine
-                    ? MainAxisAlignment.end
-                    : MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.end,
+              return Column(
+                crossAxisAlignment: item.isMine
+                    ? CrossAxisAlignment.end
+                    : CrossAxisAlignment.start,
                 children: [
-                  // Retry button for failed messages
-                  if (item.isMine && message.status == MessageSendStatus.failed) ...[
-                    IconButton(
-                      icon: Icon(
-                        Icons.error_outline_rounded,
-                        color: theme.colorScheme.error,
-                        size: 22,
+                  // Sender header for other users on first message in group
+                  if (item.showSenderHeader) ...[
+                    Padding(
+                      padding: const EdgeInsets.only(left: 4, bottom: 4, top: 4),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          CircleAvatar(
+                            radius: 12,
+                            backgroundColor:
+                                theme.colorScheme.primary.withAlpha(35),
+                            backgroundImage: message.senderAvatar != null
+                                ? NetworkImage(message.senderAvatar!)
+                                : null,
+                            child: message.senderAvatar == null
+                                ? Text(
+                                    senderLabel.isNotEmpty
+                                        ? senderLabel[0]
+                                        : 'U',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: theme.colorScheme.primary,
+                                    ),
+                                  )
+                                : null,
+                          ),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              senderLabel,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.labelMedium?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: theme.colorScheme.primary,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      tooltip: 'Failed to send. Tap to retry.',
-                      onPressed: onRetry,
                     ),
                   ],
 
-                  // The Bubble
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      maxWidth: 520, // Max 520px on wide screens
-                    ),
-                    child: Container(
-                      constraints: BoxConstraints(
-                        maxWidth: MediaQuery.of(context).size.width * 0.78,
-                      ),
-                      decoration: BoxDecoration(
-                        color: bubbleBg,
-                        borderRadius: borderRadius,
-                      ),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          borderRadius: borderRadius,
-                          onLongPress: () => _showActionSheet(context),
-                          onSecondaryTap: () => _showActionSheet(context),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 10,
+                  // Bubble & Status Row
+                  Row(
+                    mainAxisAlignment: item.isMine
+                        ? MainAxisAlignment.end
+                        : MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      // Retry button for failed messages
+                      if (item.isMine &&
+                          message.status == MessageSendStatus.failed) ...[
+                        IconButton(
+                          icon: Icon(
+                            Icons.error_outline_rounded,
+                            color: theme.colorScheme.error,
+                            size: 22,
+                          ),
+                          tooltip: 'Failed to send. Tap to retry.',
+                          onPressed: onRetry,
+                        ),
+                      ],
+
+                      // The Bubble (Flexible ensures the child never overflows the row)
+                      Flexible(
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxWidth: maxBubbleWidth,
+                          ),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: bubbleBg,
+                              borderRadius: borderRadius,
                             ),
-                            child: _buildBubbleContent(
-                              context,
-                              message.content,
-                              timeStr,
-                              textColor,
+                            clipBehavior: Clip.antiAlias,
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: borderRadius,
+                                onLongPress: () => _showActionSheet(context),
+                                onSecondaryTap: () => _showActionSheet(context),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 10,
+                                  ),
+                                  child: _buildBubbleContent(
+                                    context,
+                                    message.content,
+                                    timeStr,
+                                    textColor,
+                                    maxBubbleWidth,
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
+                    ],
                   ),
                 ],
-              ),
-            ],
+              );
+            },
           ),
         ),
       ),
@@ -327,6 +344,7 @@ class ChatMessageBubble extends StatelessWidget {
     String content,
     String timeStr,
     Color textColor,
+    double maxBubbleWidth,
   ) {
     final theme = Theme.of(context);
     final urlRegex = RegExp(
@@ -357,17 +375,24 @@ class ChatMessageBubble extends StatelessWidget {
         WidgetSpan(
           alignment: PlaceholderAlignment.baseline,
           baseline: TextBaseline.alphabetic,
-          child: GestureDetector(
-            onTap: () => _handleLinkTap(context, url),
-            child: Text(
-              url,
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-                height: 1.4,
-                color: theme.colorScheme.primary,
-                decoration: TextDecoration.underline,
-                decorationColor: theme.colorScheme.primary,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: math.max(60.0, maxBubbleWidth - 32),
+            ),
+            child: GestureDetector(
+              onTap: () => _handleLinkTap(context, url),
+              child: Text(
+                url,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  height: 1.4,
+                  color: theme.colorScheme.primary,
+                  decoration: TextDecoration.underline,
+                  decorationColor: theme.colorScheme.primary,
+                ),
               ),
             ),
           ),

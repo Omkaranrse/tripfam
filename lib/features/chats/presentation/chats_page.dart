@@ -375,7 +375,6 @@ class _ChatsPageState extends ConsumerState<ChatsPage> {
     required bool isMasterDetail,
   }) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final hasUnread = chat.unreadCount > 0;
     final isSelected = isMasterDetail && _selectedChat?.tripId == chat.tripId;
     final timeStr = _formatSmartTimestamp(chat.lastMessageAt);
@@ -474,9 +473,7 @@ class _ChatsPageState extends ConsumerState<ChatsPage> {
                             fontWeight:
                                 hasUnread ? FontWeight.w600 : FontWeight.w400,
                             color: hasUnread
-                                ? (isDark
-                                    ? AppTheme.lime
-                                    : theme.colorScheme.primary)
+                                ? theme.colorScheme.primary
                                 : theme.colorScheme.onSurface.withAlpha(140),
                           ),
                         ),

@@ -61,13 +61,10 @@ class MockAuthRepository implements AuthRepository {
   MockAuthRepository(this.currentUser);
 
   @override
-  final User? currentUser;
+  final AppUser? currentUser;
 
   @override
-  Session? get currentSession => null;
-
-  @override
-  Stream<AuthState> get authStateChanges => const Stream.empty();
+  Stream<AppUser?> get authStateChanges => const Stream.empty();
 
   @override
   Future<bool> signInWithGoogle() async => true;
@@ -79,8 +76,7 @@ class MockAuthRepository implements AuthRepository {
   Future<void> signOut() async {}
 
   @override
-  Future<AuthResponse> verifyOtp(String email, String token) async =>
-      AuthResponse(session: null, user: currentUser);
+  Future<void> verifyOtp(String email, String token) async {}
 }
 
 void main() {
@@ -112,12 +108,9 @@ void main() {
     );
   }
 
-  User makeTestUser(String id) => User(
+  AppUser makeTestUser(String id) => AppUser(
         id: id,
-        appMetadata: const {},
-        userMetadata: const {},
-        aud: 'authenticated',
-        createdAt: '2026-10-01',
+        email: '$id@example.com',
       );
 
   setUp(() async {

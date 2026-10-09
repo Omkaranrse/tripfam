@@ -39,6 +39,11 @@ dependencies:
   camera: ^0.12.1
   flutter_animate: ^4.5.2
   url_launcher: ^6.3.1
+  firebase_core: ^4.15.0
+  firebase_auth: ^6.7.0
+  cloud_firestore: ^6.10.0
+  google_sign_in: ^7.2.0
+  flutter_webrtc: ^1.6.2+hotfix.4
 
 dev_dependencies:
   flutter_test:
